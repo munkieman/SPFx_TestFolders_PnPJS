@@ -1,0 +1,28 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/config.2.0.schema.json",
+  "version": "2.0",
+  "bundles": {
+    "test-folders-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/testFolders/TestFoldersWebPart.js",
+          "manifest": "./src/webparts/testFolders/TestFoldersWebPart.manifest.json"
+        }
+      ]
+    }
+  },
+  "externals": {
+    "jquery": {
+      "path": "https://code.jquery.com/jquery-3.5.1.min.js",
+      "globalName": "jquery"
+    },
+    "bootstrap": {
+      "path": "https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js",
+      "globalName": "bootstrap",
+      "globalDependencies": ["jquery"]
+    } 
+  },
+  "localizedResources": {
+    "TestFoldersWebPartStrings": "lib/webparts/testFolders/loc/{locale}.js"
+  }
+}

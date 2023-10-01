@@ -1,0 +1,40 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
+  "solution": {
+    "name": "test-folders-client-side-solution",
+    "id": "e7206b36-71c5-4be1-8216-d34b02f8d2c6",
+    "version": "1.0.0.0",
+    "includeClientSideAssets": true,
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "developer": {
+      "name": "",
+      "websiteUrl": "",
+      "privacyUrl": "",
+      "termsOfUseUrl": "",
+      "mpnId": "Undefined-1.18.0"
+    },
+    "metadata": {
+      "shortDescription": {
+        "default": "TestFolders description"
+      },
+      "longDescription": {
+        "default": "TestFolders description"
+      },
+      "screenshotPaths": [],
+      "videoUrl": "",
+      "categories": []
+    },
+    "features": [
+      {
+        "title": "test-folders Feature",
+        "description": "The feature that activates elements of the test-folders solution.",
+        "id": "74593141-cc24-4538-af23-3cd40d81f448",
+        "version": "1.0.0.0"
+      }
+    ]
+  },
+  "paths": {
+    "zippedPackage": "solution/test-folders.sppkg"
+  }
+}
