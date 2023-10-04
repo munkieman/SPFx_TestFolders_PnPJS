@@ -25,7 +25,8 @@ export interface ITestFoldersWebPartProps {
   description: string;
   asmResults: any;
   cenResults: any;
-  //folderNameIDArray: any[];
+  dataResults: any;
+  folderNameArray: any[];
   divisions:string[];
   URL:string;
   tenantURL: any;
@@ -66,58 +67,118 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
                                   </Contains>
                                 </Or>                                  
                               </Where>
+                              <OrderBy>
+                                  <FieldRef Name="DC_Folder" Ascending="TRUE" />
+                                  <FieldRef Name="DC_SubFolder01" Ascending="TRUE" />
+                                  <FieldRef Name="DC_SubFolder02" Ascending="TRUE" />
+                                  <FieldRef Name="DC_SubFolder03" Ascending="TRUE" />
+                              </OrderBy>
                             </Query>                            
-                            <OrderBy>
-                                <FieldRef Name="DC_Folder" Ascending="TRUE" />
-                                <FieldRef Name="DC_SubFolder01" Ascending="TRUE" />
-                                <FieldRef Name="DC_SubFolder02" Ascending="TRUE" />
-                                <FieldRef Name="DC_SubFolder03" Ascending="TRUE" />
-                            </OrderBy>
                           </View>`;
 
-    const asmDC = Web([sp.web,`https://munkieman.sharepoint.com/sites/asm_dc/`]); 
-    const cenDC = Web([sp.web,`https://munkieman.sharepoint.com/sites/cen_dc/`]); 
+    this.properties.divisions=["asm"]; //,"cen","cnn","emp","hea"];
 
-    asmDC.lists.getByTitle(libraryName)
-      .getItemsByCAMLQuery({ViewXml:view},"FieldValuesAsText/FileRef", "FieldValueAsText/FileLeafRef")
-      .then((Results) => {
-        //return Results.json()
-        this.properties.asmResults=Results;
-        console.log("ASM Results");
-        console.log(Results);
-      })
-      .catch(() => {});
+    this.properties.divisions.forEach(async (number,index)=>{
+      console.log(number,index);
+      const dcTitle = this.properties.divisions[index]+"_dc";
+      const webDC = Web([sp.web,`https://munkieman.sharepoint.com/sites/${dcTitle}/`]); 
 
-    cenDC.lists.getByTitle(libraryName)
-      .getItemsByCAMLQuery({ViewXml:view},"FieldValuesAsText/FileRef", "FieldValueAsText/FileLeafRef")
-      .then((Results) => {
-        this.properties.cenResults=Results;
-        console.log("Cen Results");
-        console.log(Results);
-      })
-      .catch(() => {});   
+      await webDC.lists.getByTitle(libraryName)
+        .getItemsByCAMLQuery({ViewXml:view},"FieldValuesAsText/FileRef", "FieldValueAsText/FileLeafRef")
+        .then((Results) => {
+          console.log(dcTitle+" "+Results.length);
 
-      this._renderFolders();
+          if(Results.length>0){
+            console.log(dcTitle+" Results");
+            console.log(Results);
+            this.properties.dataResults=Results;
+          }else{
+            alert("No Data found for this Team in "+dcTitle);
+            //const listContainer = this.domElement.querySelector('#folderContainer');
+            //if(listContainer){
+            //  listContainer.innerHTML = "";    
+            //}
+          }    
+        })
+        .catch(() => {});   
+      });
+
+    this._renderFolders();
   }
  
   private _renderFolders(): void{
     alert('getting folders');
+    
+    let html : string = "";
+    let folderName : string = "";
+    let folderNamePrev : string = "";
+    let count = 0;
+    this.properties.folderNameArray=[];
 
-    let dataResults:any[]=[];
+    console.log("Folder Results");
+    console.log(this.properties.dataResults);
 
-    dataResults.push(this.properties.cenResults);
-    dataResults.push(this.properties.asmResults);
+    for(let x=0;x<this.properties.dataResults.length;x++){
+      console.log(this.properties.dataResults[x].FieldValuesAsText.DC_x005f_Folder);
+      folderName = this.properties.dataResults[x].FieldValuesAsText.DC_x005f_Folder;      
+      console.log('folderName='+folderName);    
+      
+      if(folderName !== folderNamePrev){  
+        let folderNameID=folderName.replace(/\s+/g, "")+x;
+        html+=`<ul>
+                <li>
+                  <button class="btn btn-primary" id="${folderNameID}" type="button" data-bs-toggle="collapse" aria-expanded="true" aria-controls="accordionPF${x}">
+                    <i class="bi bi-folder2"></i>
+                    <a href="#" class="text-white ms-1">${folderName}</a>
+                    <span class="badge bg-secondary">${count}</span>                    
+                  </button>
+                </li>
+              </ul>`;            
+        folderNamePrev=folderName;
+        this.properties.folderNameArray.push(folderName);
+        //count++;
+      }      
+    }
+    console.log("folderIDarray="+this.properties.folderNameArray);
 
-    console.log("Cen Results - Folders");
-    console.log(this.properties.cenResults);
-    console.log(dataResults);
-    console.log(dataResults[0][7]);
+    const listContainer = this.domElement.querySelector('#folderContainer');
+    if(listContainer){
+      listContainer.innerHTML = html;    
+    }
+    this.setFolderListeners();
   }
+
+  private async setFolderListeners(): Promise<void> {
+    console.log("setFolderListeners called ");
+    try {
+      // *** event listeners for parent folders
+            
+      if (this.properties.folderNameArray.length > 0) {
+        for (let x = 0; x < this.properties.folderNameArray.length; x++) {         
+          const folderNameID = this.properties.folderNameArray[x].replace(/\s+/g, "");
+          console.log(folderNameID);
+
+          //document
+          //  .getElementById("folder " + folderNameID)
+          //  .addEventListener("click", (_e: Event) => {
+              //this.getFiles(folderNameID, this.properties.folderArray[x])
+          //  });
+        }
+      }
+    } catch (err) {
+      //console.log("setFolderListeners", err.message);
+      //await this.addError(this.properties.siteName, "setFolderListeners", err.message);
+    }
+    return;
+  }
+
 
   public render(): void {
 
-    const bootstrapCssURL = "https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css";
+    const bootstrapCssURL ="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css";
+    const bootstrapIconsCssURL ="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css";
     SPComponentLoader.loadCss(bootstrapCssURL);
+    SPComponentLoader.loadCss(bootstrapIconsCssURL);
 
     this.properties.URL = this.context.pageContext.web.absoluteUrl;
     this.properties.tenantURL = this.properties.URL.split('/',5);
@@ -252,36 +313,28 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
 
 /*
 
+    const asmDC = Web([sp.web,`https://munkieman.sharepoint.com/sites/asm_dc/`]); 
+    const cenDC = Web([sp.web,`https://munkieman.sharepoint.com/sites/cen_dc/`]); 
 
-    this.properties.divisions.forEach(async (number,index)=>{
-      //console.log(number,index);
-      const dcTitle = this.properties.divisions[index]+"_dc";
-      const webDC = Web([sp.web,`https://munkieman.sharepoint.com/sites/${dcTitle}/`]); 
-
-      await webDC.lists.getByTitle(libraryName)
+    asmDC.lists.getByTitle(libraryName)
       .getItemsByCAMLQuery({ViewXml:view},"FieldValuesAsText/FileRef", "FieldValueAsText/FileLeafRef")
       .then((Results) => {
-        console.log(dcTitle+" "+Results.length);
+        //return Results.json()
+        this.properties.asmResults=Results;
+        console.log("ASM Results");
+        console.log(Results);
+      })
+      .catch(() => {});
 
-        if(Results.length>0){
-          //console.log(dcTitle+" Results");
-          //console.log(Results);
-          for(let x=0;x<Results.length;x++){
-            //console.log(Results[x]);
-            dataResults.push(Results[x]);
-          }            
-        }else{
-          alert("No Data found for this Team in "+dcTitle);
-          const listContainer = this.domElement.querySelector('#folderContainer');
-          if(listContainer){
-            listContainer.innerHTML = "";    
-          }
-        }    
-      });
-      console.log("Data Results 1");
-      console.log(dataResults);
-      this._renderFolders(dataResults);
-    });
+    cenDC.lists.getByTitle(libraryName)
+      .getItemsByCAMLQuery({ViewXml:view},"FieldValuesAsText/FileRef", "FieldValueAsText/FileLeafRef")
+      .then((Results) => {
+        this.properties.cenResults=Results;
+        console.log("Cen Results");
+        console.log(Results);
+      })
+      .catch(() => {});   
+
 */
 
 /*
@@ -312,6 +365,16 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
 
 
 //  private _renderFolders(response:any[]): void{
+
+    //let dataResults:any[]=[];
+
+    //dataResults.push(this.properties.cenResults);
+    //dataResults.push(this.properties.asmResults);
+
+    //console.log("Cen Results - Folders");
+    //console.log(this.properties.cenResults);
+    //console.log(dataResults[0][7]);
+
     
 //    alert('getting folders');
     
