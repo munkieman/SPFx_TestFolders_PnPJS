@@ -20,18 +20,19 @@ import "@pnp/sp/items/get-all";
 import { LogLevel, PnPLogging } from "@pnp/logging";
 
 require('bootstrap');
+require('./styles/custom.css');
 
 export interface ITestFoldersWebPartProps {
   description: string;
-  asmResults: any;
-  cenResults: any;
-  dataResults: any;
+  //asmResults: any;
+  //cenResults: any;
+  dataResults: any[];
   folderNameArray: any[];
   divisions:string[];
   URL:string;
-  tenantURL: any;
+  tenantURL: string[];
   dcURL: string;
-  siteArray: any;
+  siteArray: string[];
   siteName: string;
   siteShortName: string;
   siteTitle: string;
@@ -112,7 +113,8 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
     let html : string = "";
     let folderName : string = "";
     let folderNamePrev : string = "";
-    let count = 0;
+    let folderNameID : string = "";
+    //let count = 0;
     this.properties.folderNameArray=[];
 
     console.log("Folder Results");
@@ -123,20 +125,30 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
       folderName = this.properties.dataResults[x].FieldValuesAsText.DC_x005f_Folder;      
       console.log('folderName='+folderName);    
       
-      if(folderName !== folderNamePrev){  
-        let folderNameID=folderName.replace(/\s+/g, "")+x;
+      if(folderName !== folderNamePrev){          
+
+        if(folderName.replace(/\s+/g, "")==undefined){
+          folderNameID=folderName;
+          alert("1 "+folderNameID);
+        }else{
+          folderNameID=folderName.replace(/\s+/g, "");
+          alert("2 "+folderNameID);
+        }
+        
+        let count:any=this.fileCount(folderName);
+        console.log("count="+count);
+
         html+=`<ul>
                 <li>
-                  <button class="btn btn-primary" id="${folderNameID}" type="button" data-bs-toggle="collapse" aria-expanded="true" aria-controls="accordionPF${x}">
+                  <button class="btn btn-primary" id="folder_${folderNameID}" type="button" data-bs-toggle="collapse" aria-expanded="true" aria-controls="accordionPF${x}">
                     <i class="bi bi-folder2"></i>
                     <a href="#" class="text-white ms-1">${folderName}</a>
-                    <span class="badge bg-secondary">${count}</span>                    
+                                        
                   </button>
                 </li>
               </ul>`;            
         folderNamePrev=folderName;
         this.properties.folderNameArray.push(folderName);
-        //count++;
       }      
     }
     console.log("folderIDarray="+this.properties.folderNameArray);
@@ -145,7 +157,27 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
     if(listContainer){
       listContainer.innerHTML = html;    
     }
-    this.setFolderListeners();
+    setTimeout(()=> {
+      this.setFolderListeners();
+    }
+    ,3000);
+  }
+
+  private async fileCount(folderName:string): Promise<void>{
+
+    let counter : number = 0;
+    for (let c=0;c<this.properties.dataResults.length;c++) {
+      if (this.properties.dataResults[c].FieldValuesAsText.DC_x005f_Folder === folderName){
+        counter++;
+      } 
+    }
+    let html=`<span class="text-right badge bg-secondary">${counter}</span>`;
+    const listContainer = this.domElement.querySelector('#folder_'+folderName.replace(/\s+/g, ""));
+    if(listContainer){
+      listContainer.innerHTML = html;    
+    }
+    
+    console.log("number of files=" + counter);
   }
 
   private async setFolderListeners(): Promise<void> {
@@ -158,20 +190,43 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
           const folderNameID = this.properties.folderNameArray[x].replace(/\s+/g, "");
           console.log(folderNameID);
 
-          //document
-          //  .getElementById("folder " + folderNameID)
-          //  .addEventListener("click", (_e: Event) => {
+          document.getElementById("folder_" + folderNameID)
+            ?.addEventListener("click", (_e: Event) => {
+              alert("folder_"+folderNameID);
               //this.getFiles(folderNameID, this.properties.folderArray[x])
-          //  });
+          });
         }
       }
     } catch (err) {
       //console.log("setFolderListeners", err.message);
       //await this.addError(this.properties.siteName, "setFolderListeners", err.message);
     }
-    return;
+    this.setFolderActive();
   }
 
+  private setFolderActive(): void {
+
+    // Get the container element
+    //var btnContainer = document.getElementById("myDIV");
+
+    // Get all buttons with class="btn" inside the container
+    //let btns:any = btnContainer?.getElementsByClassName("btn");  
+
+    // Loop through the buttons and add the active class to the current/clicked button
+    //for (var i = 0; i < btns.length; i++) {
+    //  btns[i].addEventListener("click", function() {
+    //    var current = document.getElementsByClassName("active");
+
+        // If there's no active class
+    //    if (current.length > 0) {
+    //      current[0].className = current[0].className.replace(" active", "");
+    //    }
+
+        // Add the active class to the current/clicked button
+    //    this.className += " active";
+    //  });
+    //}
+  }
 
   public render(): void {
 
