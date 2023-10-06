@@ -39,6 +39,7 @@ export interface ITestFoldersWebPartProps {
   divisionName: string;
   divisionTitle: string;
   teamName: string;
+  isDCPowerUser:boolean;
 }
 
 export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFoldersWebPartProps> {
@@ -48,7 +49,7 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
 
   //private empDC = Web("https://maximusunitedkingdom.sharepoint.com/sites/emp_dc/").using(SPFx(this.context));
 
-  private _getData(libraryName:string): void {
+  private  _getData(libraryName:string,tabNum:number,category:string): void {
     alert(libraryName);
     const sp = spfi().using(SPFx(this.context)).using(PnPLogging(LogLevel.Warning));    
 
@@ -104,58 +105,105 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
         .catch(() => {});   
       });
 
-    this._renderFolders();
+      this._renderFolders(libraryName,tabNum,category)
   }
  
-  private _renderFolders(): void{
+  private async _renderFolders(libraryName:string,tabNum:number,category:string): Promise<void>{
     alert('getting folders');
     
-    let html : string = "";
+    let folderContainer;
+    let fCount : number = 0;
+    let folderHTML: string="";
     let folderName : string = "";
-    let folderNamePrev : string = "";
+    let folderPrev : string = "";
     let folderNameID : string = "";
-    //let count = 0;
+    let folderID : string = "";
+
     this.properties.folderNameArray=[];
+    this.properties.isDCPowerUser = true;
 
     console.log("Folder Results");
     console.log(this.properties.dataResults);
 
-    for(let x=0;x<this.properties.dataResults.length;x++){
-      console.log(this.properties.dataResults[x].FieldValuesAsText.DC_x005f_Folder);
-      folderName = this.properties.dataResults[x].FieldValuesAsText.DC_x005f_Folder;      
-      console.log('folderName='+folderName);    
+    switch (libraryName) {
+      case "Policies":
+        folderContainer = this.domElement.querySelector("#policiesFolders");
+        break;
+      case "Procedures":
+        folderContainer = this.domElement.querySelector("#proceduresFolders");
+        break;
+      case "Guides":
+        folderContainer = this.domElement.querySelector("#guidesFolders");
+        break;
+      case "Forms":
+        folderContainer = this.domElement.querySelector("#formsFolders");
+        break;
+      case "General":
+        folderContainer = this.domElement.querySelector("#generalFolders");
+        break;
+      case "Management":
+        folderContainer = this.domElement.querySelector("#managementFolders");
+        break;
+      case "Custom":
+        folderContainer = this.domElement.querySelector("#customFolders");
+        break;
+    }
+
+    if(folderContainer){
+      folderContainer.innerHTML = "";
+    }
+
+    if(this.properties.dataResults.length > 0){
+      for(let x=0;x<this.properties.dataResults.length;x++){
+
+        if(this.properties.dataResults[x].Knowledge_Folder !== null) {
+          folderName = this.properties.dataResults[x].FieldValuesAsText.DC_x005f_Folder;
+          console.log(this.properties.dataResults[x].FieldValuesAsText.DC_x005f_Folder);
+                
+          console.log('folderName='+folderName);    
       
-      if(folderName !== folderNamePrev){          
+          if(folderName !== folderPrev){          
 
-        if(folderName.replace(/\s+/g, "")==undefined){
-          folderNameID=folderName;
-          alert("1 "+folderNameID);
-        }else{
-          folderNameID=folderName.replace(/\s+/g, "");
-          alert("2 "+folderNameID);
-        }
+            // *** Parent Folder ID
+            folderID = "dcTab" + tabNum + "-Folder" + fCount;
+
+            if(folderName.replace(/\s+/g, "")==undefined){
+              folderNameID=folderName;
+              alert("1 "+folderNameID);
+            }else{
+              folderNameID=folderName.replace(/\s+/g, "");
+              alert("2 "+folderNameID);
+            }
         
-        let count:any=this.fileCount(folderName);
-        console.log("count="+count);
+            let count=this.fileCount(folderName);
+            console.log("count="+count);
 
-        html+=`<ul>
-                <li>
-                  <button class="btn btn-primary" id="folder_${folderNameID}" type="button" data-bs-toggle="collapse" aria-expanded="true" aria-controls="accordionPF${x}">
-                    <i class="bi bi-folder2"></i>
-                    <a href="#" class="text-white ms-1">${folderName}</a>
-                                        
-                  </button>
-                </li>
-              </ul>`;            
-        folderNamePrev=folderName;
-        this.properties.folderNameArray.push(folderName);
-      }      
+            folderHTML += `<div class="accordion mt-1" id="accordionPF${x}">
+                              <div class="accordion-item">
+                                <h2 class="accordion-header" id="folder_${folderNameID}">
+                                  <a href="" role="button" class="btn btn-primary folderBtn" id="${folderNameID}" type="button" data-bs-toggle="collapse" data-bs-target="#${folderID}" aria-expanded="true" aria-controls="accordionPF${x}">
+                                    <i class="bi bi-folder2"></i>
+                                    <span class="text-white ms-1">${folderName}</span>                    
+                                    <span class="badge bg-secondary">${count}</span>                    
+                                  </a>
+                                </h2>
+                                <div id="${folderID}" class="accordion-collapse collapse" aria-labelledby="headingSF1" data-bs-parent="#accordionPF${x}">                                        
+                                  <div class="accordion-body" id="${folderNameID}Group"></div>
+                                </div>                                  
+                              </div>
+                            </div>`;
+            fCount++;
+            this.properties.folderNameArray.push(folderName);
+            folderPrev = folderName;
+          }  
+        }                                    
+      }
     }
     console.log("folderIDarray="+this.properties.folderNameArray);
 
-    const listContainer = this.domElement.querySelector('#folderContainer');
-    if(listContainer){
-      listContainer.innerHTML = html;    
+    //const listContainer = this.domElement.querySelector('#folderContainer');
+    if(folderContainer){
+      folderContainer.innerHTML = folderHTML;    
     }
     setTimeout(()=> {
       this.setFolderListeners();
@@ -230,11 +278,6 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
 
   public render(): void {
 
-    const bootstrapCssURL ="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css";
-    const bootstrapIconsCssURL ="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css";
-    SPComponentLoader.loadCss(bootstrapCssURL);
-    SPComponentLoader.loadCss(bootstrapIconsCssURL);
-
     this.properties.URL = this.context.pageContext.web.absoluteUrl;
     this.properties.tenantURL = this.properties.URL.split('/',5);
     const siteSNArray : any[] = this.properties.URL.split('_',2);
@@ -260,34 +303,60 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
         </p>
         <h4>Learn more about SPFx development:</h4>
       </div>
-      <div class="row btnContainer btn-group">
-        <button class="btn btn-primary" id="policies">Policies</button>
-        <button class="btn btn-primary" id="procedures">Procedures</button>
-        <button class="btn btn-primary" id="guides">Guides</button>
-        <button class="btn btn-primary" id="forms">Forms</button>
-        <button class="btn btn-primary" id="general">General</button>
-      </div>
-      <div class="row">
-        <div class="col-6" id="docFolders">
-          <h4 class="colTitle">Folder</h4>
-          <div class="justify-content-center flex-column colContainer" id="folderContainer"></div>
-        </div>   
-        <div class="col-6" id="docFiles">
-          <h4 class="colTitle">Files</h4>
-          <div class="justify-content-center flex-column colContainer" id="fileContainer"></div>
+
+      <div class="d-flex align-items-start">
+        <div class="nav flex-column nav-pills me-3" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+          <button class="btn btn-primary" id="policies">Policies</button>
+          <button class="btn btn-primary" id="procedures">Procedures</button>
+          <button class="btn btn-primary" id="guides">Guides</button>
+          <button class="btn btn-primary" id="forms">Forms</button>
+          <button class="btn btn-primary" id="general">General</button>
+        </div>
+
+        <div class="tab-content" id="v-pills-tabContent">
+          <div class="tab-pane fade libraryTab" id="Policies" role="tabpanel" aria-labelledby="policies" tabindex="0"> 
+            <div class="row">
+              <div class="col-auto" id="policiesFolders">
+                <h4 class="colTitle text-black">Folder</h4>
+                <div class="justify-content-center flex-column colContainer" id="folderContainer">policies content</div>
+              </div>
+              <div class="col" id="policiesFiles"></div>
+            </div>               
+          </div>
+          <div class="tab-pane fade libraryTab" id="Procedures" role="tabpanel" aria-labelledby="procedures" tabindex="0">
+            <div class="row">
+              <div class="col-auto" id="proceduresFolders"></div>
+              <div class="col" id="proceduresFiles"></div>
+            </div> 
+          </div>
         </div>
       </div>
     </section>`;
-    
-    document.getElementById('policies')?.addEventListener("click", (_e:Event) => this._getData('Policies'));
-    //document.getElementById('procedures')?.addEventListener("click",(_e:Event) => this._getData('Procedures'));
-    //document.getElementById('guides')?.addEventListener("click",(_e:Event) => this.getData('Guides'));
-    //document.getElementById('forms')?.addEventListener("click",(_e:Event) => this.getData('Forms'));
-    //document.getElementById('general')?.addEventListener("click",(_e:Event) => this.getData('General'));
+
+    /*
+        <div class="row">
+          <div class="col-6" id="docFolders">
+            <h4 class="colTitle">Folder</h4>
+            <div class="justify-content-center flex-column colContainer" id="folderContainer"></div>
+          </div>   
+          <div class="col-6" id="docFiles">
+            <h4 class="colTitle">Files</h4>
+            <div class="justify-content-center flex-column colContainer" id="fileContainer"></div>
+          </div>
+        </div>
+
+    */
+    document.getElementById('policies')?.addEventListener("click", (_e:Event) => this._getData('Policies',1,""));
+    document.getElementById('procedures')?.addEventListener("click",(_e:Event) => this._getData('Procedures',2,""));
+    document.getElementById('guides')?.addEventListener("click",(_e:Event) => this._getData('Guides',3,""));
+    document.getElementById('forms')?.addEventListener("click",(_e:Event) => this._getData('Forms',4,""));
+    document.getElementById('general')?.addEventListener("click",(_e:Event) => this._getData('General',5,""));
   }
 
   public async onInit(): Promise<void> {
     await super.onInit();
+    SPComponentLoader.loadCss("https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css");
+    SPComponentLoader.loadCss("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css");
 
     return this._getEnvironmentMessage().then(message => {
       this._environmentMessage = message;
