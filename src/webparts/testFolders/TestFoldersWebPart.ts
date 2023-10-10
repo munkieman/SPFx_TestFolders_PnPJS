@@ -86,6 +86,7 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
                                   <FieldRef Name="DC_SubFolder01" Ascending="TRUE" />
                                   <FieldRef Name="DC_SubFolder02" Ascending="TRUE" />
                                   <FieldRef Name="DC_SubFolder03" Ascending="TRUE" />
+                                  <FieldRef Name="LinkFilename" Ascending="TRUE" />
                               </OrderBy>
                             </Query>                            
                           </View>`;
@@ -99,14 +100,14 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
 
       await webDC.lists.getByTitle(libraryName)
         .getItemsByCAMLQuery({ViewXml:view},"FieldValuesAsText/FileRef", "FieldValueAsText/FileLeafRef")
-        .then((Results) => {
+        .then(async (Results) => {
           console.log(dcTitle+" "+Results.length);
 
           if(Results.length>0){
             console.log(dcTitle+" Results");
             console.log(Results);
             //this.properties.dataResults=Results;
-            this._renderFolders(Results,libraryName,tabNum,category)
+            await this._renderFolders(Results,libraryName,tabNum,category)
           }else{
             alert("No Data found for this Team in "+dcTitle);
             //const listContainer = this.domElement.querySelector('#folderContainer');
@@ -115,7 +116,7 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
             //}
           }    
         })
-        .catch(() => {});   
+        .catch(() => {console.log()});   
       });
   }
  
@@ -192,7 +193,7 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
     }
 
     if(folderContainer){
-      if(folderContainer.innerHTML != ""){
+      if(folderContainer.innerHTML !== ""){
         folderContainer.innerHTML = "";
       }
     }
@@ -200,27 +201,25 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
     if(results.length > 0){
       for(let x=0;x<results.length;x++){
         folderName = results[x].FieldValuesAsText.DC_x005f_Folder;
-        this.properties.dataResults[x]=results[x];
+        subFolderName1 = results[x].FieldValuesAsText.DC_x005f_SubFolder01;
+        subFolderName2 = results[x].FieldValuesAsText.DC_x005f_SubFolder02;
+        subFolderName3 = results[x].FieldValuesAsText.DC_x005f_SubFolder03;
 
-        if(folderName !== null) {
-          //console.log(this.properties.dataResults[x].FieldValuesAsText.DC_x005f_Folder);               
-          console.log('folderName=',folderName);    
-      
-          if(folderName !== folderPrev){          
+        //this.properties.dataResults[x]=results[x];
 
-            // *** Parent Folder ID
+        if(folderName !== undefined) {      
+          if(folderName !== folderPrev){         
             folderID = "dcTab" + tabNum + "-Folder" + fCount;
 
-            if(folderName.replace(/\s+/g, "")==undefined){
+            if(folderName.replace(/\s+/g, "")===undefined){
               folderNameID=folderName;
-              alert("1 "+folderNameID);
             }else{
               folderNameID=folderName.replace(/\s+/g, "");
-              alert("2 "+folderNameID);
             }
-        
+ 
             count=await this.fileCount(results,folderName);
-            //console.log("count="+count);
+            console.log("count="+count);
+            console.log("FolderName ",folderName);
 
             folderHTML += `<div class="accordion mt-1" id="accordionPF${x}">
                               <div class="accordion-item">
@@ -232,29 +231,26 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
                                   </a>
                                 </h2>
                                 <div id="${folderID}" class="accordion-collapse collapse" aria-labelledby="headingSF1" data-bs-parent="#accordionPF${x}">                                        
-                                  <div class="accordion-body" id="${folderNameID}Group"></div>
-                                </div>                                  
-                              </div>
-                            </div>`;                           
+                                  <div class="accordion-body">`;                           
             fCount++;
             this.properties.folderNameArray.push(folderName);
-            folderPrev = folderName;
-          }  
+            folderPrev = folderName;            
+          }
 
-          if (results[x].Knowledge_SubFolder !== null) {
-            subFolderName1 = results[x].FieldValuesAsText.DC_x005f_SubFolder01;
-            subFolder01ID = folderID + "-Sub01";
-            this.properties.subFolder1Array.push(subFolderName1);
+          if(subFolderName1 !== undefined){
+            if(subFolderName1 !== subFolderPrev1){
+              subFolder01ID = folderID + "-Sub01";
 
-            if(subFolderName1 !== subFolderPrev1){  
-
-              if(subFolderName1.replace(/\s+/g, "")==undefined){
+              if(subFolderName1.replace(/\s+/g, "")===undefined){
                 subFolderName1ID=subFolderName1;
               }else{
                 subFolderName1ID = subFolderName1.replace(/\s+/g, "");
               }
 
-              console.log("pass x="+x+" sf1="+subFolderName1+" sf1prev="+subFolderPrev1+" sfName2_ID="+subFolderName1ID);
+              count=await this.fileCount(results,subFolderName1);
+              console.log("count="+count);
+              console.log("SubFolderName1 ",subFolderName1);
+
               this.properties.sf01IDArray.push(folderNameID);                    
               subFolder1HTML += `<div class="accordion" id="accordion${subFolder01ID}">
                                     <div class="accordion-item">                
@@ -265,29 +261,29 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
                                         </button>
                                       </h2>
                                       <div id="${subFolder01ID}" class="accordion-collapse collapse" aria-labelledby="headingSF3-1" data-bs-parent="accordion${subFolder01ID}">
-                                        <div class="accordion-body subFolder" id="${subFolderName1ID}Group">
+                                        <div class="accordion-body subFolder">
                                         </div>
                                       </div>
                                     </div>
                                   </div>`;                                   
 
               subFolderPrev1 = subFolderName1;
-            }                                 
-          
-            if (results[x].Knowledge_SubFolder2 !== null) {
-              subFolderName2 = results[x].FieldValuesAsText.DC_x005f_SubFolder02;
-              subFolder02ID = folderID + "-Sub02";
-              this.properties.subFolder2Array.push(subFolderName2);                
-              
-              if(subFolderName2 !== subFolderPrev2){
-                console.log("pass x="+x+" sf2="+subFolderName2+" sf2prev="+subFolderPrev2+" sfName2_ID="+subFolderName2ID);
+            }
 
-                if(subFolderName2.replace(/\s+/g, "")==undefined){
+            if(subFolderName2 !== undefined){
+              if(subFolderName2 !== subFolderPrev2){
+                subFolder02ID = folderID + "-Sub02";
+
+                if(subFolderName2.replace(/\s+/g, "")===undefined){
                   subFolderName2ID=subFolderName2;
                 }else{
                   subFolderName2ID = subFolderName2.replace(/\s+/g, "");
                 }
-  
+
+                count=await this.fileCount(results,subFolderName2);
+                console.log("count="+count);
+                console.log("SubFolderName2 ",subFolderName2);
+                
                 this.properties.sf02IDArray.push(subFolderName1ID);
                 subFolder2HTML += `<div class="accordion" id="accordion${subFolder02ID}">
                                     <div class="accordion-item">                 
@@ -307,14 +303,15 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
                 subFolderPrev2 = subFolderName2;
               }
 
-              if (results[x].Knowledge_SubFolder3 !== null) {
-                subFolderName3 = results[x].FieldValuesAsText.DC_x005f_SubFolder03;
-                subFolderName3ID = subFolderName3.replace(/\s+/g, "");
-                //subFolder03ID = folderID + "-Sub03";
-
+              if(subFolderName3 !== undefined){
                 if(subFolderName3 !== subFolderPrev3){
-                  console.log("pass x="+x+" sf3="+subFolderName3+" sf3prev="+subFolderPrev3+" sfName3_ID="+subFolderName3ID);
-                  if(subFolderName2.replace(/\s+/g, "")==undefined){
+                  //subFolder03ID = folderID + "-Sub03";
+                  //console.log("pass x="+x+" sf3="+subFolderName3+" sf3prev="+subFolderPrev3+" sfName3_ID="+subFolderName3ID);
+                  count=await this.fileCount(results,subFolderName3);
+                  console.log("count="+count);
+                  console.log("SubFolderName3 ",subFolderName3);
+
+                  if(subFolderName2.replace(/\s+/g, "")===undefined){
                     subFolderName2ID=subFolderName2;
                   }else{
                     subFolderName2ID = subFolderName2.replace(/\s+/g, "");
@@ -329,20 +326,21 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
                                     </h2>`
                   subFolderPrev3 = subFolderName3;                  
                 }
-                this.properties.subFolder3Array.push(subFolderName3);
               }
-            } // end of subfolder 2 check
-          }  // end of subfolder 1 check                                
-        } // end of folder check
+            } 
+          }
+        }
       } // end of file status check
     } // end of for loop
 
-    console.log("folderIDarray="+this.properties.folderNameArray);
+    //console.log("folderIDarray="+this.properties.folderNameArray);
     console.log(this.properties.dataResults);
-
+    folderHTML+=`</div></div></div></div>`;
+    
+    //const listContainer = this.domElement.querySelector('#folderContainer');
     if(folderContainer){
       folderContainer.innerHTML = folderHTML;    
-    }
+    }      
 
     console.log("F_id=" + this.properties.sf01IDArray);
     console.log("SF1_id=" + this.properties.sf02IDArray);
@@ -378,8 +376,8 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
       }           
     }
 
-    setTimeout(()=> {
-      this.setFolderListeners();
+    setTimeout(async ()=> {
+      await this.setFolderListeners();
     }
     ,3000);
   }
@@ -714,3 +712,168 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
     }
 */
 //  } 
+
+
+/*
+            // *** Parent Folder ID
+            folderID = "dcTab" + tabNum + "-Folder" + fCount;
+
+            if(folderName.replace(/\s+/g, "")===undefined){
+              folderNameID=folderName;
+              alert("1 "+folderNameID);
+            }else{
+              folderNameID=folderName.replace(/\s+/g, "");
+              alert("2 "+folderNameID);
+            }
+        
+            count=await this.fileCount(results,folderName);
+            //console.log("count="+count);
+
+            folderHTML += `<div class="accordion mt-1" id="accordionPF${x}">
+                              <div class="accordion-item">
+                                <h2 class="accordion-header" id="folder_${folderNameID}">
+                                  <a href="" role="button" class="btn btn-primary folderBtn" id="${folderNameID}" type="button" data-bs-toggle="collapse" data-bs-target="#${folderID}" aria-expanded="true" aria-controls="accordionPF${x}">
+                                    <i class="bi bi-folder2"></i>
+                                    <span class="text-white ms-1">${folderName}</span>                    
+                                    <span class="badge bg-secondary">${count}</span>                    
+                                  </a>
+                                </h2>
+                                <div id="${folderID}" class="accordion-collapse collapse" aria-labelledby="headingSF1" data-bs-parent="#accordionPF${x}">                                        
+                                  <div class="accordion-body" id="${folderNameID}Group"></div>
+                                </div>                                  
+                              </div>
+                            </div>`;                           
+            fCount++;
+            this.properties.folderNameArray.push(folderName);
+            folderPrev = folderName;
+          }  
+
+          if (results[x].Knowledge_SubFolder !== null) {
+            subFolderName1 = results[x].FieldValuesAsText.DC_x005f_SubFolder01;
+            this.properties.subFolder1Array.push(subFolderName1);
+
+            if(subFolderName1 !== subFolderPrev1){  
+              subFolder01ID = folderID + "-Sub01";
+
+              if(subFolderName1.replace(/\s+/g, "")===undefined){
+                subFolderName1ID=subFolderName1;
+              }else{
+                subFolderName1ID = subFolderName1.replace(/\s+/g, "");
+              }
+
+              console.log("pass x="+x+" sf1="+subFolderName1+" sf1prev="+subFolderPrev1+" sfName2_ID="+subFolderName1ID);
+              this.properties.sf01IDArray.push(folderNameID);                    
+              subFolder1HTML += `<div class="accordion" id="accordion${subFolder01ID}">
+                                    <div class="accordion-item">                
+                                      <h2 class="accordion-header" id="folder_${subFolderName1ID}">
+                                        <button class="btn btn-primary sub1FolderBtn" id="${subFolderName1ID} type="button" data-bs-toggle="collapse" data-bs-target="#${subFolder01ID}" aria-expanded="true" aria-controls="collapseSF3-1">
+                                          <i class="bi bi-folder2"></i>
+                                          <span class="text-white ms-1">${subFolderName1}</span>
+                                        </button>
+                                      </h2>
+                                      <div id="${subFolder01ID}" class="accordion-collapse collapse" aria-labelledby="headingSF3-1" data-bs-parent="accordion${subFolder01ID}">
+                                        <div class="accordion-body subFolder" id="${subFolderName1ID}Group">
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>`;                                   
+
+              subFolderPrev1 = subFolderName1;
+            }                                 
+          
+            if (results[x].Knowledge_SubFolder2 !== null) {
+              subFolderName2 = results[x].FieldValuesAsText.DC_x005f_SubFolder02;
+              this.properties.subFolder2Array.push(subFolderName2);                
+              
+              if(subFolderName2 !== subFolderPrev2){
+                console.log("pass x="+x+" sf2="+subFolderName2+" sf2prev="+subFolderPrev2+" sfName2_ID="+subFolderName2ID);
+              subFolder02ID = folderID + "-Sub02";
+
+                if(subFolderName2.replace(/\s+/g, "")===undefined){
+                  subFolderName2ID=subFolderName2;
+                }else{
+                  subFolderName2ID = subFolderName2.replace(/\s+/g, "");
+                }
+  
+                this.properties.sf02IDArray.push(subFolderName1ID);
+                subFolder2HTML += `<div class="accordion" id="accordion${subFolder02ID}">
+                                    <div class="accordion-item">                 
+                                      <h2 class="accordion-header" id="folder_${subFolderName2ID}">
+                                        <button class="btn btn-primary sub1FolderBtn" id="${subFolderName2ID}" type="button" data-bs-toggle="collapse" data-bs-target="#${subFolder02ID}" aria-expanded="true" aria-controls="collapseSF3-2">
+                                          <i class="bi bi-folder2"></i>
+                                          <span class="text-white ms-1">${subFolderName2}</span>
+                                        </button>
+                                      </h2>
+                                      <div id="${subFolder02ID}" class="accordion-collapse collapse" aria-labelledby="headingSF-2" data-bs-parent="accordion${subFolder02ID}">
+                                        <div class="accordion-body subFolder" id="${subFolderName2ID}Group">
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>`;
+
+                subFolderPrev2 = subFolderName2;
+              }
+
+              if (results[x].Knowledge_SubFolder3 !== null) {
+                subFolderName3 = results[x].FieldValuesAsText.DC_x005f_SubFolder03;
+                subFolderName3ID = subFolderName3.replace(/\s+/g, "");
+                //subFolder03ID = folderID + "-Sub03";
+
+                if(subFolderName3 !== subFolderPrev3){
+                  console.log("pass x="+x+" sf3="+subFolderName3+" sf3prev="+subFolderPrev3+" sfName3_ID="+subFolderName3ID);
+                  if(subFolderName2.replace(/\s+/g, "")===undefined){
+                    subFolderName2ID=subFolderName2;
+                  }else{
+                    subFolderName2ID = subFolderName2.replace(/\s+/g, "");
+                  }
+  
+                  this.properties.sf03IDArray.push(subFolderName2ID);
+                  subFolder3HTML += `<h2 class="accordion-header" id="folder_${subFolderName3ID}">
+                                      <button class="btn btn-primary sub3FolderBtn" type="button">
+                                        <i class="bi bi-folder2"></i>
+                                        <span class="text-white ms-1">${subFolderName3}</span>                   
+                                      </button>
+                                    </h2>`
+                  subFolderPrev3 = subFolderName3;                  
+                }
+                this.properties.subFolder3Array.push(subFolderName3);
+              }
+            } // end of subfolder 2 check
+          }  // end of subfolder 1 check                                
+        } // end of folder check
+
+    console.log("F_id=" + this.properties.sf01IDArray);
+    console.log("SF1_id=" + this.properties.sf02IDArray);
+    console.log("SF2_id=" + this.properties.sf03IDArray);
+
+    if(this.properties.sf01IDArray !== undefined){
+      for(let x=0;x<this.properties.sf01IDArray.length;x++){
+        if(this.properties.sf01IDArray[x]!==this.properties.sf01IDArray[x-1]){
+          $('#'+this.properties.sf01IDArray[x]+'Group').append(subFolder1HTML);
+          const elem = document.querySelector("#"+this.properties.sf01IDArray[x]);
+          elem?.classList.add('accordion-button');
+        }
+      }
+    }
+    
+    if(this.properties.sf02IDArray !== undefined){
+      for(let x=0;x<this.properties.sf02IDArray.length;x++){
+        if(this.properties.sf02IDArray[x]!==this.properties.sf02IDArray[x-1]){
+          $('#'+this.properties.sf02IDArray[x]+'Group').append(subFolder2HTML);
+          const elem = document.querySelector("#"+this.properties.sf02IDArray[x]);
+          elem?.classList.add('accordion-button');
+        }
+      }
+    }
+
+    if(this.properties.sf03IDArray !== undefined){
+      for(let x=0;x<this.properties.sf03IDArray.length;x++){
+        if(this.properties.sf03IDArray[x]!==this.properties.sf03IDArray[x-1]){
+          $('#'+this.properties.sf03IDArray[x]+'Group').append(subFolder3HTML);
+          //const elem = document.querySelector("#"+this.properties.sf02IDArray[x]);
+          //elem.classList.add('accordion-button');
+        }
+      }           
+    }
+
+*/
