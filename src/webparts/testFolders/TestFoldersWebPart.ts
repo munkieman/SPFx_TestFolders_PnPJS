@@ -142,11 +142,11 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
 
     let folderName: string = "";
     let subFolderName1 : string = "";
-    //let subFolderName2 : string = "";
-    //let subFolderName3 : string = "";
+    let subFolderName2 : string = "";
+    let subFolderName3 : string = "";
 
     let folderPrev: string = "";
-    let subFolderPrev1: string = "";
+    //let subFolderPrev1: string = "";
     //let subFolderPrev2: string = "";
     //let subFolderPrev3: string = "";
 
@@ -197,7 +197,6 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
     if(this.properties.dataResults.length > 0){
 
       alert("fetching folders");
-      //console.log(results[0].FieldValuesAsText.FileLeafRef);
 
       switch (libraryName) {
         case "Policies":        
@@ -233,48 +232,60 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
 
       for(let x=0;x<this.properties.dataResults.length;x++){
 
-        if(this.properties.dataResults[x].DC_Folder !== null){
-          folderName = this.properties.dataResults[x].DC_Folder.Label;            
-        }
-
-        if(this.properties.dataResults[x].DC_SubFolder01 !== null){
-          subFolderName1 = this.properties.dataResults[x].DC_SubFolder01.Label;
-        }
-
-        //if(this.properties.dataResults[x].DC_SubFolder02 !== null){
-        //  subFolderName2 = this.properties.dataResults[x].DC_SubFolder02.Label;
-        //}
-
-        //if(this.properties.dataResults[x].DC_SubFolder03 !== null){
-        //  subFolderName3 = this.properties.dataResults[x].DC_SubFolder03.Label;
-        //}
+        if(this.properties.dataResults[x].FieldValuesAsText.DC_x005f_Folder !== ""){
+          folderName = this.properties.dataResults[x].FieldValuesAsText.DC_x005f_Folder;            
+          subFolderName1 = this.properties.dataResults[x].FieldValuesAsText.DC_x005f_SubFolder01;
+          subFolderName2 = this.properties.dataResults[x].FieldValuesAsText.DC_x005f_SubFolder02;
+          subFolderName3 = this.properties.dataResults[x].FieldValuesAsText.DC_x005f_SubFolder03;
         
         // *** check is a new folder, if so create new folder string and add to DOM
-        if (folderName !== folderPrev) {
-          folderPrev = folderName;   
-          folderHTML+=`<div class="row">
-                        <button class="btn btn-primary" type="button" data-bs-toggle="collapse">
-                          <i class="bi bi-folder2"></i>
-                          <a href="#" class="text-white ms-1">${folderName}</a>
-                          <span class="badge bg-secondary">0</span>                    
-                        </button>
-                      </div>`;                         
-          folderPrev = folderName;  
-        }                                      
+          if(folderName !== folderPrev){
 
-        if (this.properties.dataResults[x].DC_SubFolder01 !== null) {
-          if(subFolderName1 !== subFolderPrev1){  
-            folderHTML+=`<div class="row ms-1">
-                          <button class="btn btn-primary" type="button" data-bs-toggle="collapse">
-                            <i class="bi bi-folder2"></i>
-                            <a href="#" class="text-white ms-1">${subFolderName1}</a>
-                            <span class="badge bg-secondary">0</span>                    
-                          </button>
-                        </div>`; 
-            subFolderPrev1 = subFolderName1;
-          }                                         
-        }  // end of subfolder 1 check                                
-      }  // end of for loop
+            console.log("CHK folder ",folderName);
+            folderHTML+=`<div class="row">
+                      <button class="btn btn-primary" type="button" data-bs-toggle="collapse">
+                        <i class="bi bi-folder2"></i>
+                        <a href="#" class="text-white ms-1">${folderName}</a>
+                        <span class="badge bg-secondary">0</span>                    
+                      </button>
+                    </div>`;                         
+            folderPrev = folderName;
+
+            if(subFolderName1 !== ''){
+              console.log("CHK subfolder1 ",subFolderName1);
+              folderHTML+=`<div class="row ms-1">
+                            <button class="btn btn-primary" type="button" data-bs-toggle="collapse">
+                              <i class="bi bi-folder2"></i>
+                              <a href="#" class="text-white ms-1">${subFolderName1}</a>
+                              <span class="badge bg-secondary">0</span>                    
+                            </button>
+                          </div> `
+            }  
+
+            if(subFolderName2 !== ''){
+              console.log("CHK subfolder2 ",subFolderName2);  
+              folderHTML+=`<div class="row ms-2">
+              <button class="btn btn-primary" type="button" data-bs-toggle="collapse">
+                <i class="bi bi-folder2"></i>
+                <a href="#" class="text-white ms-1">${subFolderName2}</a>
+                <span class="badge bg-secondary">0</span>                    
+              </button>
+            </div>`;                               
+            }          
+              
+            if(subFolderName3 !== ''){
+              console.log("CHK subfolder3 ",subFolderName3);
+              folderHTML+=`<div class="row ms-3">
+              <button class="btn btn-primary" type="button" data-bs-toggle="collapse">
+                <i class="bi bi-folder2"></i>
+                <a href="#" class="text-white ms-1">${subFolderName3}</a>
+                <span class="badge bg-secondary">0</span>                    
+              </button>
+            </div>`;
+            }
+          }
+        }          
+      }  // *** end of for loop
 
       console.log(folderHTML);
 
@@ -486,33 +497,7 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
                                       </button>
                                     </div>`;                
 */
-
-/*
-        if(folderName !== "" && subFolderName1 == ""){
-          //if(subFolderName1 !== subFolderPrev1){
-            console.log("subfolder1 ",subFolderName1);
-            console.log("subFolderPrev1 ",subFolderPrev1);          
-            subFolderPrev1 = subFolderName1;
-          //}              
-        }
-
-        if(folderName !== "" && subFolderName1 !== "" && subFolderName2 == ""){
-          //if(subFolderName2 !== subFolderPrev2){
-            console.log("subfolder2 ",subFolderName2);
-            console.log("subFolderPrev2 ",subFolderPrev2);          
-            subFolderPrev2 = subFolderName2;
-          //}        
-        }
-
-        if(folderName !== "" && subFolderName1 !== "" && subFolderName2 !== "" && subFolderName3 !== ""){
-          //if(subFolderName3 !== subFolderPrev3){
-            console.log("subfolder3 ",subFolderName3);
-            console.log("subFolderPrev3 ",subFolderPrev3);          
-            subFolderPrev3 = subFolderName3
-          //}
-        }
-*/                
-
+               
 /*
         if(folderName !== "" && folderName !== folderPrev){
           if(subFolderName1 !== "" && subFolderName1 !== subFolderPrev1){
