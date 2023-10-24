@@ -136,9 +136,7 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
 
     //let HTML : string = "<div class='row'>";
     let folderHTML: string = "";
-    //let subFolder1HTML : string = "";
-    //let subFolder2HTML : string = "";
-    //let subFolder3HTML : string = "";
+    let folderHTMLEnd : string = "";
 
     let folderName: string = "";
     let subFolderName1 : string = "";
@@ -231,62 +229,138 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
       //}
 
       for(let x=0;x<this.properties.dataResults.length;x++){
+        folderName = this.properties.dataResults[x].FieldValuesAsText.DC_x005f_Folder;            
 
-        if(this.properties.dataResults[x].FieldValuesAsText.DC_x005f_Folder !== ""){
-          folderName = this.properties.dataResults[x].FieldValuesAsText.DC_x005f_Folder;            
+        if(folderName !== ""){
           subFolderName1 = this.properties.dataResults[x].FieldValuesAsText.DC_x005f_SubFolder01;
           subFolderName2 = this.properties.dataResults[x].FieldValuesAsText.DC_x005f_SubFolder02;
           subFolderName3 = this.properties.dataResults[x].FieldValuesAsText.DC_x005f_SubFolder03;
         
-        // *** check is a new folder, if so create new folder string and add to DOM
+          // *** check is a new folder, if so create new folder string and add to DOM
           if(folderName !== folderPrev){
 
             console.log("CHK folder ",folderName);
-            folderHTML+=`<div class="row">
-                      <button class="btn btn-primary" type="button" data-bs-toggle="collapse">
-                        <i class="bi bi-folder2"></i>
-                        <a href="#" class="text-white ms-1">${folderName}</a>
-                        <span class="badge bg-secondary">0</span>                    
-                      </button>
-                    </div>`;                         
+            if(subFolderName1!==``){       
+              folderHTML+=`<div class="accordion" id="accordion${x}">
+                            <div class="accordion-item">
+                              <h2 class="accordion-header" id="headerPF-${x}">
+                                <button class="btn btn-primary accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSF1-${x}" aria-expanded="true" aria-controls="collapseSF1-${x}">
+                                  <i class="bi bi-folder2"></i>
+                                  <a href="#" class="text-white ms-1">${folderName}</a>
+                                  <span class="badge bg-secondary">0</span>                    
+                                </button>
+                              </h2>`;
+            }else{
+              folderHTML+=`<div class="accordion" id="accordion${x}">
+                            <div class="accordion-item">
+                              <h2 class="accordion-header" id="headerPF-${x}">
+                                <button class="btn btn-primary" type="button" data-bs-toggle="collapse" aria-expanded="true" aria-controls="collapseOne">
+                                  <i class="bi bi-folder2"></i>
+                                  <a href="#" class="text-white ms-1">${folderName}</a>
+                                  <span class="badge bg-secondary">0</span>                    
+                                </button>
+                              </h2>`;
+            }
             folderPrev = folderName;
 
             if(subFolderName1 !== ''){
               console.log("CHK subfolder1 ",subFolderName1);
-              folderHTML+=`<div class="row ms-1">
-                            <button class="btn btn-primary" type="button" data-bs-toggle="collapse">
-                              <i class="bi bi-folder2"></i>
-                              <a href="#" class="text-white ms-1">${subFolderName1}</a>
-                              <span class="badge bg-secondary">0</span>                    
-                            </button>
-                          </div> `
-            }  
+
+              if(subFolderName2 !== ``){
+                folderHTML+=`<div id="collapseSF1-${x}" class="accordion-collapse collapse" aria-labelledby="headingSF1" data-bs-parent="#accordion${x}">
+                              <div class="accordion-body"> 
+                                <div class="accordion" id="accordionSF1-${x}">                              
+                                  <div class="accordion-item">
+                                    <h2 class="accordion-header" id="headerSF1-${x}">
+                                      <button class="btn btn-primary accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSF2-${x}" aria-expanded="false" aria-controls="collapseSF2-${x}">
+                                        <i class="bi bi-folder2"></i>
+                                        <a href="#" class="text-white ms-1">${subFolderName1}</a>
+                                        <span class="badge bg-secondary">0</span>                                        
+                                      </button>
+                                    </h2>`;
+                folderHTMLEnd+=`</div></div></div></div>`;
+
+              }else{
+                folderHTML+=`<div id="collapseSF1-${x}" class="ms-1 accordion-collapse collapse" aria-labelledby="headingSF1" data-bs-parent="#accordion${x}">
+                              <div class="accordion-body">
+                                <div class="accordion" id="accordionSF1-${x}">
+                                  <div class="accordion-item">
+                                    <h2 class="accordion-header" id="headerSF1-${x}">
+                                      <button class="btn btn-primary" type="button" data-bs-toggle="collapse" aria-expanded="true" aria-controls="collapseSF1">
+                                        <i class="bi bi-folder2"></i>
+                                        <a href="#" class="text-white ms-1">${subFolderName1}</a>
+                                        <span class="badge bg-secondary">0</span>                    
+                                      </button>
+                                    </h2>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>`;
+              }               
+            }
 
             if(subFolderName2 !== ''){
               console.log("CHK subfolder2 ",subFolderName2);  
-              folderHTML+=`<div class="row ms-2">
-              <button class="btn btn-primary" type="button" data-bs-toggle="collapse">
-                <i class="bi bi-folder2"></i>
-                <a href="#" class="text-white ms-1">${subFolderName2}</a>
-                <span class="badge bg-secondary">0</span>                    
-              </button>
-            </div>`;                               
-            }          
-              
+
+              if(subFolderName3 !==``){
+                folderHTML+=`<div id="collapseSF2-${x}" class="accordion-collapse collapse" aria-labelledby="headingSF2" data-bs-parent="accordionSF1-${x}">
+                              <div class="accordion-body">
+                                <div class="accordion" id="accordionSF2-${x}">
+                                  <div class="accordion-item">
+                                    <h2 class="accordion-header" id="headerSF2-${x}">
+                                      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSF2-${x}" aria-expanded="false" aria-controls="collapseSF2-${x}">
+                                        <i class="bi bi-folder2"></i>
+                                        <a href="#" class="text-white ms-1">${subFolderName2}</a>
+                                        <span class="badge bg-secondary">0</span>                    
+                                      </button>
+                                    </h2>`;
+                folderHTMLEnd+=`</div></div></div></div>`;
+
+              }else{
+                folderHTML+=`<div id="collapseSF2-${x}" class="accordion-collapse collapse" aria-labelledby="headingSF2" data-bs-parent="accordionSF1-${x}">
+                              <div class="accordion-body">
+                                <div class="accordion" id="accordionSF2-${x}">
+                                  <div class="accordion-item">
+                                    <h2 class="accordion-header" id="headerSF2-${x}">
+                                      <button class="btn btn-primary" type="button" data-bs-toggle="collapse" aria-expanded="false" aria-controls="collapseSF2-${x}">
+                                        <i class="bi bi-folder2"></i>
+                                        <a href="#" class="text-white ms-1">${subFolderName2}</a>
+                                        <span class="badge bg-secondary">0</span>                    
+                                      </button>
+                                    </h2>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>`;
+              }               
+            }   
+
             if(subFolderName3 !== ''){
-              console.log("CHK subfolder3 ",subFolderName3);
-              folderHTML+=`<div class="row ms-3">
-              <button class="btn btn-primary" type="button" data-bs-toggle="collapse">
-                <i class="bi bi-folder2"></i>
-                <a href="#" class="text-white ms-1">${subFolderName3}</a>
-                <span class="badge bg-secondary">0</span>                    
-              </button>
-            </div>`;
+              folderHTML+=`<div id="collapseSF3-${x}" class="accordion-collapse collapse" aria-labelledby="headingSF3" data-bs-parent="accordionSF2-${x}">
+                            <div class="accordion-body">
+                              <h2 class="accordion-header" id="headerSF3-${x}">
+                                <button 
+                                  class="btn btn-primary" 
+                                  type="button" 
+                                  data-bs-toggle="collapse" 
+                                  data-bs-target="#collapseSF3-${x}" 
+                                  aria-expanded="false" 
+                                  aria-controls="collapseSF3-${x}">
+                                    <i class="bi bi-folder2"></i>
+                                    <a href="#" id="sf3ID"> 
+                                      ${subFolderName3}}
+                                    </a>
+                                </button>
+                              </h2>
+                            </div>
+                          </div>`;
             }
+            folderHTML+=folderHTMLEnd;
           }
         }          
       }  // *** end of for loop
 
+      folderHTML+=`</div></div>`;
       console.log(folderHTML);
 
       switch (libraryName) {
