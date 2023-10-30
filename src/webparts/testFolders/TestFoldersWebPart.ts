@@ -33,12 +33,12 @@ export interface ITestFoldersWebPartProps {
   dcURL: string;   
   siteName: string;
   siteShortName: string;
-  divisionName: string;
+  divisionName: string[];
   divisionTitle: string;
   teamName: string;
   libraryName: string;
   siteArray: any;
-  acDivisions: string[]; 
+  dcDivisions: string[]; 
   folderArray: any[];
   subFolder1Array: any[];
   subFolder2Array: any[];
@@ -57,7 +57,8 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
     let dcCount:number=0;
 
     this.properties.dataResults=[];
-    this.properties.acDivisions=["asm","cen"]; //,"cnn","emp","hea"];
+    this.properties.dcDivisions=["asm","cen"]; //,"cnn","emp","hea"];
+    this.properties.divisionName=["Assessments","Central","Connect","Employability","Health"];
 
     const view : string = `<View>
                             <Query>
@@ -83,7 +84,7 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
                             </Query>                            
                           </View>`;
 
-    this.properties.acDivisions.forEach(async (site,index)=>{
+    this.properties.dcDivisions.forEach(async (site,index)=>{
       console.log(site,index);
       const dcTitle = site+"_dc";
       const webDC = Web([sp.web,`https://munkieman.sharepoint.com/sites/${dcTitle}/`]); 
@@ -97,10 +98,10 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
             //console.log(dcTitle+" "+Results.length);
             const count:number = await this.addToResults(Results,dcCount); //.then(async ()=>{            
             dcCount = count;
-            if(count===this.properties.acDivisions.length){
+            if(count===this.properties.dcDivisions.length){
               //console.log("count",count);
               await this._renderFolders(Results,tabNum,libraryName).then(async () => {
-                  this.setFolderListeners(libraryName);
+                  this.setFolderListeners(index,libraryName);
               }); //,tabNum,category,flag)
             }        
           }else{
@@ -513,13 +514,14 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
     return counter;
   } 
 
-  private setFolderListeners(libraryName:string): void {
+  private setFolderListeners(num:number,libraryName:string): void {
     console.log("setFolderListeners called");
 
     //this.properties.getFilesCallFlag = false;
     //console.log("setfolderlisteners callflag="+this.properties.getFilesCallFlag);
 
     try {
+      let division = this.properties.divisionName[num];
 
       // *** event listeners for parent folders      
       if (this.properties.folderArray.length > 0) {
@@ -536,7 +538,7 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
 
           document.getElementById("folder_" + folderNameID[x])
             ?.addEventListener("click", (_e: Event) => {
-              this.getFiles(folderName[x]);
+              this.getFiles(division,folderName[x]);
 
               if (document.querySelector("#" + libraryName + "Folders button.active") !== null) {
                 document
@@ -565,7 +567,7 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
           document.getElementById("SF1_" + subFolder1NameID[x])
             ?.addEventListener("click", (_e: Event) => {
               console.log("subfolder1name ",subFolder1Name[x]);
-              this.getFiles(subFolder1Name[x]);
+              this.getFiles(division,subFolder1Name[x]);
 
               if (document.querySelector("#" + libraryName + "Folders button.active") !== null) {
                 document
@@ -595,7 +597,7 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
           
           document.getElementById("SF2_" + subFolder2NameID[x])
             ?.addEventListener("click", (_e: Event) => {
-              this.getFiles(subFolder2Name[x]);
+              this.getFiles(division,subFolder2Name[x]);
 
               if (document.querySelector("#" + libraryName + "Folders button.active") !== null) {
                 document
@@ -625,7 +627,7 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
           
           document.getElementById("SF3_" + subFolder3NameID[x])
             ?.addEventListener("click", (_e: Event) => {
-              this.getFiles(subFolder3Name[x]);
+              this.getFiles(division,subFolder3Name[x]);
 
               if (document.querySelector("#" + libraryName + "Folders button.active") !== null) {
                 document
@@ -647,48 +649,51 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
     console.log("setFolderListeners completed");
   }   
 
-  private getFiles(folderName:string) :void {
+  private getFiles(division:string,folderName:string) :void {
     alert("getfiles for "+folderName);
-    let fileFlag : boolean = false;   
-    let resultsFolder : string = "";
-    let resultsSubFolder1 : string = "";
-    let resultsSubFolder2 : string = "";
-    let resultsSubFolder3 : string = "";
+    let fileFlag : boolean = false;  
+    let divisionName : string = ""; 
+    let Folder : string = "";
+    let SubFolder1 : string = "";
+    let SubFolder2 : string = "";
+    let SubFolder3 : string = "";
 
     //console.log("getfiles ",this.properties.dataResults);
     for(let f=0;f<this.properties.dataResults.length;f++){
-      resultsFolder = this.properties.dataResults[f].FieldValuesAsText.DC_x005f_Folder;
-      resultsSubFolder1 = this.properties.dataResults[f].FieldValuesAsText.DC_x005f_SubFolder01;
-      resultsSubFolder2 = this.properties.dataResults[f].FieldValuesAsText.DC_x005f_SubFolder02;
-      resultsSubFolder3 = this.properties.dataResults[f].FieldValuesAsText.DC_x005f_SubFolder03;
+      divisionName = this.properties.dataResults[x].FieldValuesAsText.DC_x005f_Division;
+      Folder = this.properties.dataResults[f].FieldValuesAsText.DC_x005f_Folder;
+      SubFolder1 = this.properties.dataResults[f].FieldValuesAsText.DC_x005f_SubFolder01;
+      SubFolder2 = this.properties.dataResults[f].FieldValuesAsText.DC_x005f_SubFolder02;
+      SubFolder3 = this.properties.dataResults[f].FieldValuesAsText.DC_x005f_SubFolder03;
       const fileName: string = this.properties.dataResults[f].FieldValuesAsText.FileLeafRef;
-      //console.log(folderName," ",resultsFolder," ",resultsSubFolder1," ",resultsSubFolder2);
+      //console.log(folderName," ",Folder," ",SubFolder1," ",SubFolder2);
       
-      if(resultsFolder === folderName && resultsSubFolder1 === ""){
-        console.log("folder ",folderName," ",fileName);
-        fileFlag = true;
-      }
+      if(divisionName === division){
+        if(Folder === folderName && SubFolder1 === ""){
+          console.log("folder ",folderName," ",fileName);
+          fileFlag = true;
+        }
 
-      if( resultsSubFolder1 === folderName && resultsSubFolder2 === "" ){
-        console.log("subfolder1 ",folderName," ",fileName);
-        fileFlag = true;
-      }
+        if( SubFolder1 === folderName && SubFolder2 === "" ){
+          console.log("subfolder1 ",folderName," ",fileName);
+          fileFlag = true;
+        }
 
-      if( resultsSubFolder2 === folderName && resultsSubFolder3 === "" ){
-        console.log("subfolder2 ",folderName," ",fileName);
-        fileFlag = true;
-      }
+        if( SubFolder2 === folderName && SubFolder3 === "" ){
+          console.log("subfolder2 ",folderName," ",fileName);
+          fileFlag = true;
+        }
 
-      if( resultsSubFolder3 === folderName){
-        console.log(folderName," ",fileName);
-        console.log("subfolder3 ",folderName," ",fileName);
-        fileFlag = true;
+        if( SubFolder3 === folderName){
+          console.log(folderName," ",fileName);
+          console.log("subfolder3 ",folderName," ",fileName);
+          fileFlag = true;
+        }
+        
+        if(fileFlag){
+          console.log(divisionName," ",fileName);
+        }
       }
-      
-      if(fileFlag){
-        console.log();
-      }
-
     }
     return;
   }
