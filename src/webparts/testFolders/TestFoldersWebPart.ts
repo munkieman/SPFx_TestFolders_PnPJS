@@ -54,7 +54,7 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
     alert(libraryName);
     
     const sp = spfi().using(SPFx(this.context)).using(PnPLogging(LogLevel.Warning));  
-    let dcCount:number=0;
+    //let dcCount:number=0;
 
     this.properties.dataResults=[];
     this.properties.dcDivisions=["asm","cen"]; //,"cnn","emp","hea"];
@@ -88,7 +88,8 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
       console.log(site,index);
       const dcTitle = site+"_dc";
       const webDC = Web([sp.web,`https://munkieman.sharepoint.com/sites/${dcTitle}/`]); 
-
+      const division = this.properties.divisionName[index];
+      
       await webDC.lists.getByTitle(libraryName)
         .getItemsByCAMLQuery({ViewXml:view},"FieldValuesAsText/FileRef", "FieldValueAsText/FileLeafRef")
         .then(async (Results) => {
@@ -96,14 +97,15 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
           if(Results.length>0){
             //console.log(dcTitle+" Results");
             //console.log(dcTitle+" "+Results.length);
-            const count:number = await this.addToResults(Results,dcCount); //.then(async ()=>{            
-            dcCount = count;
-            if(count===this.properties.dcDivisions.length){
+            await this.addToResults(Results).then(async ()=>{            
+            //const count:number = 
+            //dcCount = count;
+            //if(count===this.properties.dcDivisions.length){
               //console.log("count",count);
               await this._renderFolders(Results,tabNum,libraryName).then(async () => {
-                  this.setFolderListeners(index,libraryName);
+                  this.setFolderListeners(division,libraryName);
               }); //,tabNum,category,flag)
-            }        
+            });        
           }else{
             alert("No Data found for this Team in "+dcTitle);
           }    
@@ -112,21 +114,21 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
     });
   }
 
-  private async addToResults(results:any,dcCount:number):Promise<number>{
+  private async addToResults(results:any):Promise<void>{
     let count:number=0; 
-    dcCount++;
+    //dcCount++;
 
-    if(results.length > 0){
+    //if(results.length > 0){
       count=this.properties.dataResults.length;
       for(let x=0;x<results.length;x++){
         this.properties.dataResults[count+x]=results[x];
       }
       //console.log("results length ",results.length); 
       //console.log("dataResults length ",this.properties.dataResults.length);
-      console.log("dataResults ",this.properties.dataResults);
-    }    
+      //console.log("dataResults ",this.properties.dataResults);
+    //}    
     //console.log("acDivisions length ",this.properties.acDivisions.length);
-    return dcCount;
+    return;
   }
   
   private async _renderFolders(results:any,tabNum:number,libraryName:string): Promise<void>{ //libraryName:string,tabNum:number,category:string
@@ -172,7 +174,7 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
     
     if(this.properties.dataResults.length > 0){
 
-      alert("fetching folders");
+      //alert("fetching folders");
 
       switch (libraryName) {
         case "Policies":        
@@ -514,14 +516,14 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
     return counter;
   } 
 
-  private setFolderListeners(num:number,libraryName:string): void {
+  private setFolderListeners(division:string,libraryName:string): void {
     console.log("setFolderListeners called");
 
     //this.properties.getFilesCallFlag = false;
     //console.log("setfolderlisteners callflag="+this.properties.getFilesCallFlag);
 
     try {
-      let division = this.properties.divisionName[num];
+      //let division = this.properties.divisionName[num];
 
       // *** event listeners for parent folders      
       if (this.properties.folderArray.length > 0) {
@@ -658,9 +660,9 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
     let SubFolder2 : string = "";
     let SubFolder3 : string = "";
 
-    //console.log("getfiles ",this.properties.dataResults);
+    console.log("getfiles ",this.properties.dataResults);
     for(let f=0;f<this.properties.dataResults.length;f++){
-      divisionName = this.properties.dataResults[x].FieldValuesAsText.DC_x005f_Division;
+      divisionName = this.properties.dataResults[f].FieldValuesAsText.DC_x005f_Division;
       Folder = this.properties.dataResults[f].FieldValuesAsText.DC_x005f_Folder;
       SubFolder1 = this.properties.dataResults[f].FieldValuesAsText.DC_x005f_SubFolder01;
       SubFolder2 = this.properties.dataResults[f].FieldValuesAsText.DC_x005f_SubFolder02;
@@ -668,6 +670,8 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
       const fileName: string = this.properties.dataResults[f].FieldValuesAsText.FileLeafRef;
       //console.log(folderName," ",Folder," ",SubFolder1," ",SubFolder2);
       
+      console.log(divisionName," ",division);
+
       if(divisionName === division){
         if(Folder === folderName && SubFolder1 === ""){
           console.log("folder ",folderName," ",fileName);
