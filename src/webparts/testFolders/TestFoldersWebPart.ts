@@ -88,13 +88,16 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
       console.log(site,index);
       const dcTitle = site+"_dc";
       const webDC = Web([sp.web,`https://munkieman.sharepoint.com/sites/${dcTitle}/`]); 
-      const division = this.properties.divisionName[index];
-      
+
       await webDC.lists.getByTitle(libraryName)
         .getItemsByCAMLQuery({ViewXml:view},"FieldValuesAsText/FileRef", "FieldValueAsText/FileLeafRef")
         .then(async (Results) => {
 
           if(Results.length>0){
+            const division = this.properties.divisionName[index];
+
+            alert(division);
+
             //console.log(dcTitle+" Results");
             //console.log(dcTitle+" "+Results.length);
             await this.addToResults(Results).then(async ()=>{            
@@ -103,7 +106,7 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
             //if(count===this.properties.dcDivisions.length){
               //console.log("count",count);
               await this._renderFolders(Results,tabNum,libraryName).then(async () => {
-                  this.setFolderListeners(division,libraryName);
+                  this.setFolderListeners(libraryName);
               }); //,tabNum,category,flag)
             });        
           }else{
@@ -334,6 +337,8 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
 
   private async makeHTML(x:number,division:string,folderName:string,subFolderName1:string,subFolderName2:string,subFolderName3:string):Promise<string>{
 
+    //alert("make html "+division);
+    
     let fcount:any=0;
     let sf1count:any=0;
     let sf2count:any=0;
@@ -354,7 +359,7 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
     }else{
       folderNameID=folderName+"_"+x;
     }
-    this.properties.folderArray.push(folderName,folderNameID);
+    this.properties.folderArray.push(division,folderName,folderNameID);
     fcount = await this.fileCount(division,folderName);
 
     if(subFolderName1!==``){       
@@ -388,7 +393,7 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
       }else{
         subFolderName1ID=subFolderName1+"_"+x;
       }
-      this.properties.subFolder1Array.push(subFolderName1,subFolderName1ID);
+      this.properties.subFolder1Array.push(division,subFolderName1,subFolderName1ID);
       sf1count = await this.fileCount(division,subFolderName1);
 
       if(subFolderName2 !== ``){
@@ -431,7 +436,7 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
       }else{
         subFolderName2ID=subFolderName2+"_"+x;
       }
-      this.properties.subFolder2Array.push(subFolderName2,subFolderName2ID);
+      this.properties.subFolder2Array.push(division,subFolderName2,subFolderName2ID);
       sf2count = await this.fileCount(division,subFolderName2);
 
       if(subFolderName3 !==``){
@@ -473,7 +478,7 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
       }else{
         subFolderName3ID=subFolderName3+"_"+x;
       }
-      this.properties.subFolder3Array.push(subFolderName3,subFolderName3ID);
+      this.properties.subFolder3Array.push(division,subFolderName3,subFolderName3ID);
       sf3count = await this.fileCount(division,subFolderName3);
 
       folderHTML+=`<div id="collapseSF3-${x}" class="accordion-collapse collapse" aria-labelledby="headingSF3" data-bs-parent="accordionSF2-${x}">
@@ -516,31 +521,46 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
     return counter;
   } 
 
-  private setFolderListeners(division:string,libraryName:string): void {
+  private setFolderListeners(libraryName:string): void {
     console.log("setFolderListeners called");
-
+    
     //this.properties.getFilesCallFlag = false;
     //console.log("setfolderlisteners callflag="+this.properties.getFilesCallFlag);
 
     try {
-      //let division = this.properties.divisionName[num];
 
       // *** event listeners for parent folders      
       if (this.properties.folderArray.length > 0) {
 
-        const folderNameID = this.properties.folderArray.filter(function (value, index, ar) {
-          return (index % 2 > 0);
-        });
+        //const folderNameID = this.properties.folderArray.filter(function (value, index, ar) {
+        //  console.log("folderNameID ",index % 3);
+        //  return (index % 3 > 0);
+        //});
 
-        const folderName = this.properties.folderArray.filter(function (value, index, ar) {         
-          return (index % 2 === 0);
-        });
+        //const folderName = this.properties.folderArray.filter(function (value, index, ar) {         
+        //  return (index % 3 === 0);
+        //});
+
+        //const division = this.properties.folderArray.filter(function (value, index, ar) {
+        //  if(index % 3 === 0){
+        //    console.log("division ",value);
+        //  }
+        //  return (index % 3 === 0);
+        //});
+
+        const folderNameID = this.properties.folderArray.filter((value, index) => index % 3 === 3 - 1);
+        const folderName = this.properties.folderArray.filter((value, index) => index % 3 === 3 - 2);
+        const division = this.properties.folderArray.filter((value, index) => index % 3 === 3 - 3);
+
+        console.log("folderNameID ",folderNameID);
+        console.log("folderName ",folderName);
+        console.log("division ",division);
 
         for (let x = 0; x < folderNameID.length; x++) {
 
           document.getElementById("folder_" + folderNameID[x])
             ?.addEventListener("click", (_e: Event) => {
-              this.getFiles(division,folderName[x]);
+              this.getFiles(division[x], folderName[x]);
 
               if (document.querySelector("#" + libraryName + "Folders button.active") !== null) {
                 document
@@ -564,6 +584,8 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
         const subFolder1Name = this.properties.subFolder1Array.filter(function (value, index, ar) {
           return (index % 2 === 0);
         });
+
+        const division = "";
 
         for (let x = 0; x < subFolder1NameID.length; x++) {
           document.getElementById("SF1_" + subFolder1NameID[x])
@@ -595,6 +617,8 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
           return (index % 2 === 0);
         });
 
+        const division = "";
+
         for (let x = 0; x < subFolder2NameID.length; x++) {
           
           document.getElementById("SF2_" + subFolder2NameID[x])
@@ -625,6 +649,8 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
           return (index % 2 === 0);
         });
 
+        const division = "";
+
         for (let x = 0; x < subFolder3NameID.length; x++) {
           
           document.getElementById("SF3_" + subFolder3NameID[x])
@@ -653,6 +679,7 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
 
   private getFiles(division:string,folderName:string) :void {
     alert("getfiles for "+folderName);
+    
     let fileFlag : boolean = false;  
     let divisionName : string = ""; 
     let Folder : string = "";
