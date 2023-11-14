@@ -75,6 +75,7 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
                                 </Or>                                  
                               </Where>
                               <OrderBy>
+                                <FieldRef Name="DC_Division" Ascending="TRUE" />
                                 <FieldRef Name="DC_Folder" Ascending="TRUE" />
                                 <FieldRef Name="DC_SubFolder01" Ascending="TRUE" />
                                 <FieldRef Name="DC_SubFolder02" Ascending="TRUE" />
@@ -85,7 +86,7 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
                           </View>`;
 
     this.properties.dcDivisions.forEach(async (site,index)=>{
-      console.log(site,index);
+      //console.log(site,index);
       const dcTitle = site+"_dc";
       const webDC = Web([sp.web,`https://munkieman.sharepoint.com/sites/${dcTitle}/`]); 
 
@@ -136,13 +137,17 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
   
   private async _renderFolders(results:any,tabNum:number,libraryName:string): Promise<void>{ //libraryName:string,tabNum:number,category:string
 
-    console.log("results length ",results.length); 
-    console.log("dataResults length ",this.properties.dataResults.length);
+    //console.log("results length ",results.length); 
+    //console.log("dataResults length ",this.properties.dataResults.length);
 
     const policyContainer : Element | null = this.domElement.querySelector("#policiesFolders");
     const procedureContainer : Element | null = this.domElement.querySelector("#proceduresFolders");
+    const testContainer : Element | null = this.domElement.querySelector('#testFolders');
 
     //let folderCount : number = 0;
+    //let sf1Count : number = 0;
+    //let sf2Count : number = 0;
+
     //let count:number; 
     //let divisionHTML : string = "";
     let division : string = "";
@@ -153,15 +158,24 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
     let subFolderName2 : string = "";
     let subFolderName3 : string = "";
 
-    let cen_folderPrev: string = "";
-    let asm_folderPrev: string = "";
-    let divisionPrev : string = "";
+    let folderNamePrev : string = "";
+    //let subFolderName1Prev : string = "";
+    //let subFolderName2Prev : string = "";
+    //let subFolderName3Prev : string = "";
+
+    //let folderString : string = "";
+    //let subFolder1String : string = "";
+    //let subFolder2String : string = "";
+
+    //let cen_folderPrev: string = "";
+    //let asm_folderPrev: string = "";
+    //let divisionPrev : string = "";
 
     // *** accordion id's for folders
     //let folderID : string = ""; 
-    //let subFolder01ID : string = "";
-    //let subFolder02ID : string = "";
-    //let subFolder03ID : string = "";
+    //let subFolder1ID : string = "";
+    //let subFolder2ID : string = "";
+    //let subFolder3ID : string = "";
     
     // *** arrays of folder id's for the Folder EventListeners
     this.properties.folderArray = [];
@@ -172,10 +186,13 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
     //this.properties.libraryName = libraryName;
     //this.properties.isDCPowerUser = true;
 
-    console.log("folder dataResults");
-    console.log(this.properties.dataResults);
-    
-    if(this.properties.dataResults.length > 0){
+    if(testContainer){testContainer.innerHTML="";}
+
+    //console.log("folder dataResults");
+    //console.log(this.properties.dataResults);
+    console.log("results length ",results.length);
+
+    if(results.length > 0){
 
       //alert("fetching folders");
 
@@ -207,21 +224,52 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
           break;
       }
 
-      //if(this.domElement.querySelector("#policiesFolders")!=null) {
-      //  this.domElement.querySelector("#policiesFolders")!.innerHTML = "<h2>folder name</h2>";
-      //}
+      for(let x=0;x<results.length;x++){
+        console.log("results item",results[x]);
 
-      for(let x=0;x<this.properties.dataResults.length;x++){
-        folderName = this.properties.dataResults[x].FieldValuesAsText.DC_x005f_Folder;            
-        division = this.properties.dataResults[x].FieldValuesAsText.DC_x005f_Division;
+        folderName = results[x].FieldValuesAsText.DC_x005f_Folder;            
+        division = results[x].FieldValuesAsText.DC_x005f_Division;
 
         if(folderName !== "" && division !== ""){
-          subFolderName1 = this.properties.dataResults[x].FieldValuesAsText.DC_x005f_SubFolder01;
-          subFolderName2 = this.properties.dataResults[x].FieldValuesAsText.DC_x005f_SubFolder02;
-          subFolderName3 = this.properties.dataResults[x].FieldValuesAsText.DC_x005f_SubFolder03;
+          subFolderName1 = results[x].FieldValuesAsText.DC_x005f_SubFolder01;
+          subFolderName2 = results[x].FieldValuesAsText.DC_x005f_SubFolder02;
+          subFolderName3 = results[x].FieldValuesAsText.DC_x005f_SubFolder03;
 
-          //console.log(division," ",divisionPrev," ",folderName," ",folderPrev);
+          //if(division !== divisionPrev){
+          //  folderString += `<h4>${division}</h4>`;
+          //  divisionPrev = division;
+          //}
 
+          if(folderName!==folderNamePrev){
+            //folderString += `<div>
+            //                  <h5 class="folderTitle">${folderName}</h5>
+            //                </div>`;
+            //this.properties.folderArray.push(results[x]);
+            folderHTML += await this.makeHTML(x,division,folderName,subFolderName1,subFolderName2,subFolderName3);
+            folderNamePrev=folderName;            
+          }
+
+          //if(subFolderName1!==""){
+          //    folderString += `<div class="ms-1">
+          //                        <h5 class="folderTitle">${subFolderName1}</h5>
+          //                      </div>`;  
+
+          //  if(subFolderName2!==""){
+          //    folderString += `<div class="ms-2">
+          //                        <h5 class="folderTitle">${subFolderName2}</h5>
+          //                      </div>`;
+
+          //    if(subFolderName3 !==""){                
+          //        folderString += `<div class="ms-2">
+          //                            <h5 class="folderTitle">${subFolderName2}</h5>
+          //                          </div>`;
+          //    }
+          //  }
+          //}
+    
+          //if(testContainer){testContainer.innerHTML=folderString;}     
+          
+/*          
           switch(division){
             case "Assessments":
               
@@ -253,53 +301,7 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
               divisionPrev = division;
               break;
           }
-/*          
-          if(division !== divisionPrev){
-            if(folderName !== cen_folderPrev || folderName !== asm_folderPrev){
-
-              if(division !== divisionPrev){
-                folderHTML+=`<h4>${division}</h4>`;
-              }
-
-              if(subFolderName1 !== ""){
-                console.log(division," ",folderName," ",subFolderName1);
-                folderHTML+=`<a href="#" class="text-white ms-1" >${folderName}</a>`;
-              }else{
-                console.log(division," ",folderName);
-                folderHTML+=`<a href="#" class="text-white ms-1" >${folderName}</a>`;
-              }
-            }
-
-            switch(division){
-              case 'Assessments':
-                asm_folderPrev = folderName;
-                break;
-              case 'Central':
-                cen_folderPrev = folderName;
-                break;
-            }
-          //}
-          divisionPrev = division;              
-*/
-/*          
-          // *** check is a new folder, if so create new folder string and add to DOM
-          if(folderName !== folderPrev){
-              
-            if(division !== divisionPrev){
-              folderHTML+=`<h4>${division}</h4>`;
-            }
-            
-            // *** check if folderName has spaces or special characters and remove them for the ID.
-            if(folderName.replace(/\s+/g, "")!==undefined){
-              folderNameID=folderName.replace(/\s+/g, "")+"_"+x;
-            }else{
-              folderNameID=folderName+"_"+x;
-            }
-            this.properties.folderArray.push(folderName,folderNameID);
-            fcount = await this.fileCount(folderName);
-
-            //console.log("CHK folder ",folderName);
-*/
+*/         
         }
       }  // *** end of for loop
 
@@ -335,6 +337,53 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
     }
   }
 
+/*          
+          if(division !== divisionPrev){
+            if(folderName !== cen_folderPrev || folderName !== asm_folderPrev){
+
+              if(division !== divisionPrev){
+                folderHTML+=`<h4>${division}</h4>`;
+              }
+
+              if(subFolderName1 !== ""){
+                console.log(division," ",folderName," ",subFolderName1);
+                folderHTML+=`<a href="#" class="text-white ms-1" >${folderName}</a>`;
+              }else{
+                console.log(division," ",folderName);
+                folderHTML+=`<a href="#" class="text-white ms-1" >${folderName}</a>`;
+              }
+            }
+
+            switch(division){
+              case 'Assessments':
+                asm_folderPrev = folderName;
+                break;
+              case 'Central':
+                cen_folderPrev = folderName;
+                break;
+            }
+          }
+          divisionPrev = division;  
+          
+          // *** check is a new folder, if so create new folder string and add to DOM
+          if(folderName !== folderPrev){
+              
+            if(division !== divisionPrev){
+              folderHTML+=`<h4>${division}</h4>`;
+            }
+            
+            // *** check if folderName has spaces or special characters and remove them for the ID.
+            if(folderName.replace(/\s+/g, "")!==undefined){
+              folderNameID=folderName.replace(/\s+/g, "")+"_"+x;
+            }else{
+              folderNameID=folderName+"_"+x;
+            }
+            this.properties.folderArray.push(folderName,folderNameID);
+            fcount = await this.fileCount(folderName);
+
+            //console.log("CHK folder ",folderName);          
+*/
+ 
   private async makeHTML(x:number,division:string,folderName:string,subFolderName1:string,subFolderName2:string,subFolderName3:string):Promise<string>{
 
     //alert("make html "+division);
@@ -522,7 +571,7 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
   } 
 
   private setFolderListeners(libraryName:string): void {
-    console.log("setFolderListeners called");
+    //console.log("setFolderListeners called");
     
     //this.properties.getFilesCallFlag = false;
     //console.log("setfolderlisteners callflag="+this.properties.getFilesCallFlag);
@@ -560,7 +609,7 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
 
           document.getElementById("folder_" + folderNameID[x])
             ?.addEventListener("click", (_e: Event) => {
-              this.getFiles(division[x], folderName[x]);
+              this.getFiles(libraryName,folderName[x]);
 
               if (document.querySelector("#" + libraryName + "Folders button.active") !== null) {
                 document
@@ -585,13 +634,11 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
           return (index % 2 === 0);
         });
 
-        const division = "";
-
         for (let x = 0; x < subFolder1NameID.length; x++) {
           document.getElementById("SF1_" + subFolder1NameID[x])
             ?.addEventListener("click", (_e: Event) => {
-              console.log("subfolder1name ",subFolder1Name[x]);
-              this.getFiles(division,subFolder1Name[x]);
+              //console.log("subfolder1name ",subFolder1Name[x]);
+              this.getFiles(libraryName,subFolder1Name[x]);
 
               if (document.querySelector("#" + libraryName + "Folders button.active") !== null) {
                 document
@@ -617,13 +664,11 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
           return (index % 2 === 0);
         });
 
-        const division = "";
-
         for (let x = 0; x < subFolder2NameID.length; x++) {
           
           document.getElementById("SF2_" + subFolder2NameID[x])
             ?.addEventListener("click", (_e: Event) => {
-              this.getFiles(division,subFolder2Name[x]);
+              this.getFiles(libraryName,subFolder2Name[x]);
 
               if (document.querySelector("#" + libraryName + "Folders button.active") !== null) {
                 document
@@ -649,13 +694,11 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
           return (index % 2 === 0);
         });
 
-        const division = "";
-
         for (let x = 0; x < subFolder3NameID.length; x++) {
           
           document.getElementById("SF3_" + subFolder3NameID[x])
             ?.addEventListener("click", (_e: Event) => {
-              this.getFiles(division,subFolder3Name[x]);
+              this.getFiles(libraryName,subFolder3Name[x]);
 
               if (document.querySelector("#" + libraryName + "Folders button.active") !== null) {
                 document
@@ -674,56 +717,113 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
       //console.log("setFolderListeners", err.message);
       //this.addError(this.properties.siteName, "setFolderListeners", err.message);
     }    
-    console.log("setFolderListeners completed");
+    //console.log("setFolderListeners completed");
   }   
 
-  private getFiles(division:string,folderName:string) :void {
+  private getFiles(libraryName:string,folderName:string) :void {
     alert("getfiles for "+folderName);
     
     let fileFlag : boolean = false;  
-    let divisionName : string = ""; 
-    let Folder : string = "";
-    let SubFolder1 : string = "";
-    let SubFolder2 : string = "";
-    let SubFolder3 : string = "";
+    let divisionPrev : string = "";
+    let fileHTML: string = "";
 
-    console.log("getfiles ",this.properties.dataResults);
+    const policyContainer : Element | null = this.domElement.querySelector("#policiesFiles");
+    const procedureContainer : Element | null = this.domElement.querySelector("#proceduresFiles");
+
+    switch (libraryName) {
+      case "Policies":        
+        if(policyContainer){
+          policyContainer.innerHTML="";
+        }
+        break;
+      case "Procedures":
+        if(procedureContainer){
+          procedureContainer.innerHTML="";
+        }
+        break;
+      case "Guides":
+
+        break;
+      case "Forms":
+  
+        break;
+      case "General":
+
+        break;
+      case "Management":
+
+        break;
+      case "Custom":
+
+        break;
+    }
+
+    //console.log("getfiles ",this.properties.dataResults);
+
     for(let f=0;f<this.properties.dataResults.length;f++){
-      divisionName = this.properties.dataResults[f].FieldValuesAsText.DC_x005f_Division;
-      Folder = this.properties.dataResults[f].FieldValuesAsText.DC_x005f_Folder;
-      SubFolder1 = this.properties.dataResults[f].FieldValuesAsText.DC_x005f_SubFolder01;
-      SubFolder2 = this.properties.dataResults[f].FieldValuesAsText.DC_x005f_SubFolder02;
-      SubFolder3 = this.properties.dataResults[f].FieldValuesAsText.DC_x005f_SubFolder03;
-      const fileName: string = this.properties.dataResults[f].FieldValuesAsText.FileLeafRef;
-      //console.log(folderName," ",Folder," ",SubFolder1," ",SubFolder2);
+      const division : string = this.properties.dataResults[f].FieldValuesAsText.DC_x005f_Division;
+      const Folder : string = this.properties.dataResults[f].FieldValuesAsText.DC_x005f_Folder;
+      const SubFolder1 : string = this.properties.dataResults[f].FieldValuesAsText.DC_x005f_SubFolder01;
+      const SubFolder2 : string = this.properties.dataResults[f].FieldValuesAsText.DC_x005f_SubFolder02;
+      const SubFolder3 : string = this.properties.dataResults[f].FieldValuesAsText.DC_x005f_SubFolder03;
+      const fileName : string = this.properties.dataResults[f].FieldValuesAsText.FileLeafRef;
+
+      if(Folder === folderName && SubFolder1 === ""){
+        //console.log("folder ",folderName," ",fileName);
+        fileFlag = true;
+      }
+
+      if( SubFolder1 === folderName && SubFolder2 === "" ){
+        //console.log("subfolder1 ",folderName," ",fileName);
+        fileFlag = true;
+      }
+
+      if( SubFolder2 === folderName && SubFolder3 === "" ){
+        //console.log("subfolder2 ",folderName," ",fileName);
+        fileFlag = true;
+      }
+
+      if( SubFolder3 === folderName){
+        //console.log(folderName," ",fileName);
+        //console.log("subfolder3 ",folderName," ",fileName);
+        fileFlag = true;
+      }
       
-      console.log(divisionName," ",division);
+      if(fileFlag){
 
-      if(divisionName === division){
-        if(Folder === folderName && SubFolder1 === ""){
-          console.log("folder ",folderName," ",fileName);
-          fileFlag = true;
-        }
+        switch (libraryName) {
+          case "Policies":
+            if(policyContainer){
+              policyContainer.innerHTML=fileHTML;
+            }
+            break;
+          case "Procedures":
+            if(procedureContainer){
+              procedureContainer.innerHTML=fileHTML;
+            }
+            break;
+          case "Guides":
 
-        if( SubFolder1 === folderName && SubFolder2 === "" ){
-          console.log("subfolder1 ",folderName," ",fileName);
-          fileFlag = true;
-        }
+            break;
+          case "Forms":
 
-        if( SubFolder2 === folderName && SubFolder3 === "" ){
-          console.log("subfolder2 ",folderName," ",fileName);
-          fileFlag = true;
-        }
+            break;
+          case "General":
 
-        if( SubFolder3 === folderName){
-          console.log(folderName," ",fileName);
-          console.log("subfolder3 ",folderName," ",fileName);
-          fileFlag = true;
+            break;
+          case "Management":
+
+            break;
+          case "Custom":
+
+            break;
         }
-        
-        if(fileFlag){
-          console.log(divisionName," ",fileName);
+  
+        console.log(division," ",fileName);
+        if(division !== divisionPrev){
+          fileHTML+=`<h4>${division}</h4>`;
         }
+        divisionPrev = division;
       }
     }
     return;
@@ -786,6 +886,11 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
             </div>               
           </div> 
         </div>
+      </div>
+
+      <div>
+        <h4>Test Folders</h4>
+        <div id="testFolders"></div>
       </div>
     </section>`;
 
