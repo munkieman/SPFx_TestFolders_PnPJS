@@ -43,6 +43,7 @@ export interface ITestFoldersWebPartProps {
   subFolder1Array: any[];
   subFolder2Array: any[];
   subFolder3Array: any[];
+  isDCPowerUser:boolean;
 }
 
 export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFoldersWebPartProps> {
@@ -726,6 +727,9 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
     let fileFlag : boolean = false;  
     let divisionPrev : string = "";
     let fileHTML: string = "";
+    let powerUserTools: string = "";
+    let draftText: string = "";
+    let fileTypeIcon: string = "";
 
     const policyContainer : Element | null = this.domElement.querySelector("#policiesFiles");
     const procedureContainer : Element | null = this.domElement.querySelector("#proceduresFiles");
@@ -767,6 +771,10 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
       const SubFolder2 : string = this.properties.dataResults[f].FieldValuesAsText.DC_x005f_SubFolder02;
       const SubFolder3 : string = this.properties.dataResults[f].FieldValuesAsText.DC_x005f_SubFolder03;
       const fileName : string = this.properties.dataResults[f].FieldValuesAsText.FileLeafRef;
+      const fileStatus: string = this.properties.dataResults[f].FieldValuesAsText.OData__x005f_ModerationStatus;
+      const fileType: string = this.properties.dataResults[f].FieldValuesAsText.File_x005f_x0020_x005f_Type;
+      const fileURL: string = this.properties.dataResults[f].ServerRedirectedEmbedUrl;
+      const fileID: string = this.properties.dataResults[f].ID;
 
       if(Folder === folderName && SubFolder1 === ""){
         //console.log("folder ",folderName," ",fileName);
@@ -790,6 +798,77 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
       }
       
       if(fileFlag){
+  
+        //console.log(division," ",fileName);
+        if(division !== divisionPrev){
+          fileHTML+=`<h4>${division}</h4>`;
+        }        
+        divisionPrev = division;
+
+        switch (fileType) {
+          case "pdf":
+            fileTypeIcon = "bi bi-file-earmark-pdf text-danger";
+            break;
+          case "doc":
+          case "docx":
+          case "dotx":
+            fileTypeIcon = "bi bi-file-earmark-word text-primary";
+            break;
+          case "xls":
+          case "xlsx":
+          case "xlsm":
+          case "xltx":
+            fileTypeIcon = "bi bi-file-earmark-excel text-sucess";
+            break;
+          case "ppt":
+          case "pptx":
+          case "potx":
+            fileTypeIcon = "bi bi-file-earmark-ppt text-warning";
+            break;
+          case "xsn":
+            fileTypeIcon = "bi bi-file-earmark-excel text-secondary";
+            break;
+          case "msg":
+            fileTypeIcon = "bi bi-envelope-at text-info";
+            break;
+          case "zip":
+          case "rar":
+            fileTypeIcon = "bi bi-file-earmark-zip text-danger";
+            break;
+          default:
+            fileTypeIcon = "bi bi-file-earmark text-dark";
+            break;
+        }
+
+        if (this.properties.isDCPowerUser) {
+          switch (fileStatus) {
+            case "Approved":
+              powerUserTools = `<a class="docDelete" id="doc${fileID}Delete" href="#" title="Delete Document"><i class="bi bi-trash"></i></a >`;
+              draftText = "";
+              break;
+            case "Draft":
+              powerUserTools = `<a class="docDelete" id="doc${fileID}Delete" href="#" title="Delete Document"><i class="bi bi-trash"></i></a>
+                              <a class="docPublish" id="doc${fileID}Publish" href="#" title="Publish Draft Document"><i class="bi bi-file-check"></i></a>`;
+              draftText = '<i class="text-danger">draft</i>';
+              break;
+            default:
+              powerUserTools = "";
+              draftText = "";
+              break;
+          }
+        }
+
+        fileHTML += `<div class="row fileRow" id="fileRow${fileID}">
+                      <div class="col-2">
+                        ${powerUserTools}
+                        <i class="${fileTypeIcon}" title="file icon"></i>
+                        <a class="docCopyLink" id="doc${fileID}Link" href="#" title="Copy File Link to Clipboard"><i class="bi bi-link"></i></a>
+                      </div>
+                      <div class="col-10">
+                        ${draftText}
+                        <a href="${fileURL}" title="file name" target="_blank"><p>${fileName}</p></a>
+                      </div>
+                    </div>`;
 
         switch (libraryName) {
           case "Policies":
@@ -817,13 +896,7 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
           case "Custom":
 
             break;
-        }
-  
-        console.log(division," ",fileName);
-        if(division !== divisionPrev){
-          fileHTML+=`<h4>${division}</h4>`;
-        }
-        divisionPrev = division;
+        }                             
       }
     }
     return;
