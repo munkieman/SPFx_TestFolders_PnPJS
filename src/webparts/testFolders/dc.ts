@@ -1,3 +1,4 @@
+/*
 import { 
     Version,
     Log
@@ -1415,7 +1416,7 @@ import {
               );
           }
         }
-  /*      
+       
         if (this.properties.subFolder1Array.length > 0) {
           for (let x = 0; x < this.properties.subFolder1Array.length; x++) {
             const subFolder1NameID = this.properties.subFolder1Array[x].replace(/\s+/g,"");
@@ -1459,7 +1460,7 @@ import {
                 )
               );
           }
-  */
+  
       } catch (err) {
         //console.log("setFolderListeners", err.message);
         await this.addError(this.properties.siteName, "setFolderListeners", err.message);
@@ -1544,7 +1545,8 @@ import {
             <div class="row">
               <div class="col-6 welcomeText">
                 <h5 class="text-white">Welcome to ${escape(this.properties.siteTitle)} Documents
-                  ${[/*<mgt-person person-query="me"></mgt-person>*/]}
+                  ${[/*<mgt-person person-query="me"></mgt-person>]}
+
                 </h5>
               </div>
               <div class="col-5 poweruserText">
@@ -1562,8 +1564,9 @@ import {
           <div class="row" style="height:fit-content">
             <div class="col-3"><img src="${require("./assets/Robot_Spin.gif")}" height="50" width="50"/></div>
             <div class="col" id="headerBar"></div>
-            ${[/*<div class="col">${this.properties.siteTitle}</div>*/]}
-          </div>
+            ${[/*<div class="col">${this.properties.siteTitle}</div>]}
+
+            </div>
           <div class="row">
             <div class="col-auto libraryContainer">
               <div class="d-flex mt-1 align-items-start">
@@ -1630,7 +1633,6 @@ import {
       Log.error('DocumentCentre', new Error('Error message'), this.context.serviceScope);
       Log.verbose('DocumentCentre', `VERBOSE message "${strings.BasicGroupName}"`, this.context.serviceScope); 
   
-      /*
   
         <div class="${styles.welcome}">
           <img alt="" src="${this._isDarkTheme ? require('./assets/welcome-dark.png') : require('./assets/welcome-light.png')}" class="${styles.welcomeImage}" />
@@ -1654,7 +1656,7 @@ import {
             <div class="${ styles.description }">checkbox: ${escape(this.properties.checkbox)}</div>
             <div class="${ styles.description }">URL: ${escape(this.properties.URL)}</div>
             <div class="${ styles.description }">textbox: ${escape(this.properties.textbox)}</div>   
-  */
+  
     }
   
     public async onInit(): Promise<void> {
@@ -1761,7 +1763,7 @@ import {
                       { key: "HEA", text: "Health Division" },
                     ],
                   }),
-                  /*
+                  
                   PropertyPaneDropdown('teamName', {
                     label:'Team',
                     options: [
@@ -1769,13 +1771,13 @@ import {
                       { key: 'Item2', text: 'Item 2' },
                       { key: 'Item3', text: 'Item 3' }
                     ]
-                  })   
-                  */
+                  })  
+                  
                 ],
               },
             ],
           },
-          /*
+          
           { //Page 2
             header: {
               description: "Page 2"
@@ -1831,8 +1833,9 @@ import {
               }
             ]
           }
-          */
+          
         ],
       };
     }
   }
+  */

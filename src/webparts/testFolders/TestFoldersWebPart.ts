@@ -226,7 +226,7 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
       }
 
       for(let x=0;x<results.length;x++){
-        console.log("results item",results[x]);
+        //console.log("results item",results[x]);
 
         folderName = results[x].FieldValuesAsText.DC_x005f_Folder;            
         division = results[x].FieldValuesAsText.DC_x005f_Division;
@@ -600,14 +600,13 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
 
         const folderNameID = this.properties.folderArray.filter((value, index) => index % 3 === 3 - 1);
         const folderName = this.properties.folderArray.filter((value, index) => index % 3 === 3 - 2);
-        const division = this.properties.folderArray.filter((value, index) => index % 3 === 3 - 3);
+        //const division = this.properties.folderArray.filter((value, index) => index % 3 === 3 - 3);
 
         console.log("folderNameID ",folderNameID);
         console.log("folderName ",folderName);
-        console.log("division ",division);
+        //console.log("division ",division);
 
         for (let x = 0; x < folderNameID.length; x++) {
-
           document.getElementById("folder_" + folderNameID[x])
             ?.addEventListener("click", (_e: Event) => {
               this.getFiles(libraryName,folderName[x]);
@@ -626,14 +625,9 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
 
       // *** event listeners for subfolders level 1      
       if (this.properties.subFolder1Array.length > 0) {
-
-        const subFolder1NameID = this.properties.subFolder1Array.filter(function (value, index, ar) {
-          return (index % 2 > 0);
-        });
-
-        const subFolder1Name = this.properties.subFolder1Array.filter(function (value, index, ar) {
-          return (index % 2 === 0);
-        });
+        const subFolder1NameID = this.properties.subFolder1Array.filter((value, index) => index % 3 === 3 - 1);
+        const subFolder1Name = this.properties.subFolder1Array.filter((value, index) => index % 3 === 3 - 2);
+        //const subFolder1division = this.properties.folderArray.filter((value, index) => index % 3 === 3 - 3);
 
         for (let x = 0; x < subFolder1NameID.length; x++) {
           document.getElementById("SF1_" + subFolder1NameID[x])
@@ -722,9 +716,8 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
   }   
 
   private getFiles(libraryName:string,folderName:string) :void {
-    alert("getfiles for "+folderName);
+    //alert("getfiles for "+folderName);
     
-    let fileFlag : boolean = false;  
     let divisionPrev : string = "";
     let fileHTML: string = "";
     let powerUserTools: string = "";
@@ -762,9 +755,8 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
         break;
     }
 
-    //console.log("getfiles ",this.properties.dataResults);
-
     for(let f=0;f<this.properties.dataResults.length;f++){
+      let fileFlag : boolean = false;  
       const division : string = this.properties.dataResults[f].FieldValuesAsText.DC_x005f_Division;
       const Folder : string = this.properties.dataResults[f].FieldValuesAsText.DC_x005f_Folder;
       const SubFolder1 : string = this.properties.dataResults[f].FieldValuesAsText.DC_x005f_SubFolder01;
@@ -776,30 +768,26 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
       const fileURL: string = this.properties.dataResults[f].ServerRedirectedEmbedUrl;
       const fileID: string = this.properties.dataResults[f].ID;
 
-      if(Folder === folderName && SubFolder1 === ""){
-        //console.log("folder ",folderName," ",fileName);
+      if(Folder === folderName && SubFolder1 === ''){
+        console.log("folderName ",folderName," Folder ",Folder);
         fileFlag = true;
       }
 
-      if( SubFolder1 === folderName && SubFolder2 === "" ){
-        //console.log("subfolder1 ",folderName," ",fileName);
+      if( SubFolder1 === folderName && SubFolder2 === '' ){
+        console.log("subFolder ",folderName," SubFolder1 ",SubFolder1);
         fileFlag = true;
       }
 
       if( SubFolder2 === folderName && SubFolder3 === "" ){
-        //console.log("subfolder2 ",folderName," ",fileName);
         fileFlag = true;
       }
 
       if( SubFolder3 === folderName){
-        //console.log(folderName," ",fileName);
-        //console.log("subfolder3 ",folderName," ",fileName);
         fileFlag = true;
       }
       
       if(fileFlag){
   
-        //console.log(division," ",fileName);
         if(division !== divisionPrev){
           fileHTML+=`<h4>${division}</h4>`;
         }        
