@@ -67,11 +67,11 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
                                 <Or>
                                   <Eq>                
                                     <FieldRef Name="DC_Team"/>
-                                    <Value Type="TaxonomyFieldType">${this.properties.siteTitle}</Value>
+                                    <Value Type="TaxonomyFieldType">${this.properties.siteName}</Value>
                                   </Eq>                                                                
                                   <Contains>                
                                     <FieldRef Name="DC_SharedWith"/>
-                                    <Value Type='TaxonomyFieldTypeMulti'>${this.properties.siteTitle}</Value>
+                                    <Value Type='TaxonomyFieldTypeMulti'>${this.properties.siteName}</Value>
                                   </Contains>
                                 </Or>                                  
                               </Where>
@@ -89,7 +89,7 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
     this.properties.dcDivisions.forEach(async (site,index)=>{
       //console.log(site,index);
       const dcTitle = site+"_dc";
-      const webDC = Web([sp.web,`https://munkieman.sharepoint.com/sites/${dcTitle}/`]); 
+      const webDC = Web([sp.web,`https://${this.properties.tenantURL[2]}/sites/${dcTitle}/`]); 
 
       await webDC.lists.getByTitle(libraryName)
         .getItemsByCAMLQuery({ViewXml:view},"FieldValuesAsText/FileRef", "FieldValueAsText/FileLeafRef")
@@ -100,8 +100,9 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
 
             alert(division);
 
-            //console.log(dcTitle+" Results");
-            //console.log(dcTitle+" "+Results.length);
+            console.log(dcTitle+" Results");
+            console.log(Results.json());
+
             await this.addToResults(Results).then(async ()=>{            
             //const count:number = 
             //dcCount = count;
@@ -143,7 +144,9 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
 
     const policyContainer : Element | null = this.domElement.querySelector("#policiesFolders");
     const procedureContainer : Element | null = this.domElement.querySelector("#proceduresFolders");
-    const testContainer : Element | null = this.domElement.querySelector('#testFolders');
+    //const guideContainer : Element | null = this.domElement.querySelector("#guidesFolders");
+    //const formContainer : Element | null = this.domElement.querySelector("#formsFolders");
+    //const testContainer : Element | null = this.domElement.querySelector('#testFolders');
 
     //let folderCount : number = 0;
     //let sf1Count : number = 0;
@@ -187,7 +190,7 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
     //this.properties.libraryName = libraryName;
     //this.properties.isDCPowerUser = true;
 
-    if(testContainer){testContainer.innerHTML="";}
+    //if(testContainer){testContainer.innerHTML="";}
 
     //console.log("folder dataResults");
     //console.log(this.properties.dataResults);
@@ -209,10 +212,10 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
           }
           break;
         case "Guides":
-          //this.domElement.querySelector("#guidesFolders")!.innerHTML="";
+          this.domElement.querySelector("#guidesFolders")!.innerHTML="";
           break;
         case "Forms":
-          //this.domElement.querySelector("#formsFolders")!.innerHTML="";
+          this.domElement.querySelector("#formsFolders")!.innerHTML="";
           break;
         case "General":
           //this.domElement.querySelector("#generalFolders")!.innerHTML="";
@@ -320,10 +323,10 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
           }
           break;
         case "Guides":
-          //this.domElement.querySelector("#guidesFolders")!.innerHTML=folderHTML;
+          this.domElement.querySelector("#guidesFolders")!.innerHTML=folderHTML;
           break;
         case "Forms":
-          //this.domElement.querySelector("#formsFolders")!.innerHTML=folderHTML;
+          this.domElement.querySelector("#formsFolders")!.innerHTML=folderHTML;
           break;
         case "General":
           //this.domElement.querySelector("#generalFolders")!.innerHTML=folderHTML;
@@ -902,6 +905,12 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
     this.properties.siteName = this.properties.siteArray[1];
     this.properties.completeFlag = false;
 
+    console.log("tenantURL",this.properties.tenantURL);
+    console.log("URL",this.properties.URL);
+    console.log("siteName",this.properties.siteName);
+    console.log("siteTItle",this.properties.siteTitle);
+    console.log("divisionTitle",this.properties.divisionTitle);
+    
     this.domElement.innerHTML = `
     <section class="${styles.testFolders} ${!!this.context.sdks.microsoftTeams ? styles.teams : ''}">
       <div class="${styles.welcome}">
