@@ -96,65 +96,42 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
         .then(async (Results) => {
 
           if(Results.length>0){
-            const division = this.properties.divisionName[index];
-
-            alert(division);
 
             console.log(dcTitle+" Results");
             console.log(Results.json());
 
             await this.addToResults(Results).then(async ()=>{            
-            //const count:number = 
-            //dcCount = count;
-            //if(count===this.properties.dcDivisions.length){
-              //console.log("count",count);
-              await this._renderFolders(Results,tabNum,libraryName).then(async () => {
-                  this.setFolderListeners(libraryName);
-              }); //,tabNum,category,flag)
+              await this.getFolders(libraryName); 
             });        
+
           }else{
             alert("No Data found for this Team in "+dcTitle);
           }    
         })
-        .catch(() => {console.log("error")});
+        .catch((err) => {console.log("error",err);});
     });
   }
 
   private async addToResults(results:any):Promise<void>{
     let count:number=0; 
-    //dcCount++;
-
-    //if(results.length > 0){
-      count=this.properties.dataResults.length;
-      for(let x=0;x<results.length;x++){
-        this.properties.dataResults[count+x]=results[x];
-      }
-      //console.log("results length ",results.length); 
-      //console.log("dataResults length ",this.properties.dataResults.length);
-      //console.log("dataResults ",this.properties.dataResults);
-    //}    
-    //console.log("acDivisions length ",this.properties.acDivisions.length);
+    console.log("addToResults");
+    count=this.properties.dataResults.length;
+    for(let x=0;x<results.length;x++){
+      this.properties.dataResults[count+x]=results[x];
+    }
     return;
   }
-  
-  private async _renderFolders(results:any,tabNum:number,libraryName:string): Promise<void>{ //libraryName:string,tabNum:number,category:string
 
-    //console.log("results length ",results.length); 
-    //console.log("dataResults length ",this.properties.dataResults.length);
+  private async getFolders(libraryName:string): Promise<void>{ //libraryName:string,tabNum:number,category:string
 
     const policyContainer : Element | null = this.domElement.querySelector("#policiesFolders");
     const procedureContainer : Element | null = this.domElement.querySelector("#proceduresFolders");
-    //const guideContainer : Element | null = this.domElement.querySelector("#guidesFolders");
-    //const formContainer : Element | null = this.domElement.querySelector("#formsFolders");
-    //const testContainer : Element | null = this.domElement.querySelector('#testFolders');
-
-    //let folderCount : number = 0;
-    //let sf1Count : number = 0;
-    //let sf2Count : number = 0;
-
-    //let count:number; 
-    //let divisionHTML : string = "";
-    let division : string = "";
+    const guidesContainer : Element | null = this.domElement.querySelector("#guidesFolders");
+    const formsContainer : Element | null = this.domElement.querySelector("#formsFolders");
+    const generalContainer : Element | null = this.domElement.querySelector("#generalFolders");
+    const managementContainer : Element | null = this.domElement.querySelector("#managementFolders");
+    const customContainer : Element | null = this.domElement.querySelector("#customFolders");
+    
     let folderHTML: string = "";
 
     let folderName: string = "";
@@ -162,151 +139,246 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
     let subFolderName2 : string = "";
     let subFolderName3 : string = "";
 
-    let folderNamePrev : string = "";
-    //let subFolderName1Prev : string = "";
-    //let subFolderName2Prev : string = "";
-    //let subFolderName3Prev : string = "";
+    let folderPrev: string = "";
+    let subFolderPrev1 : string = "";
+    let subFolderPrev2 : string = "";
+    let subFolderPrev3 : string = "";
 
-    //let folderString : string = "";
-    //let subFolder1String : string = "";
-    //let subFolder2String : string = "";
-
-    //let cen_folderPrev: string = "";
-    //let asm_folderPrev: string = "";
-    //let divisionPrev : string = "";
 
     // *** accordion id's for folders
-    //let folderID : string = ""; 
-    //let subFolder1ID : string = "";
-    //let subFolder2ID : string = "";
-    //let subFolder3ID : string = "";
+    let folderNameID : string = ""; 
+    let subFolderName1ID: string = "";
+    let subFolderName2ID: string = "";
+    let subFolderName3ID: string = "";
     
+    let fcount:any=0;
+    let sf1count:any=0;
+    let sf2count:any=0;
+    let sf3count:any=0;
+
     // *** arrays of folder id's for the Folder EventListeners
     this.properties.folderArray = [];
     this.properties.subFolder1Array = []; 
     this.properties.subFolder2Array = [];
     this.properties.subFolder3Array = [];
     
-    //this.properties.libraryName = libraryName;
-    //this.properties.isDCPowerUser = true;
+    switch (libraryName) {
+      case "Policies":        
+        if(policyContainer){
+          policyContainer.innerHTML="";
+        }
+        break;
+      case "Procedures":
+        if(procedureContainer){
+          procedureContainer.innerHTML="";
+        }
+        break;
+      case "Guides":
+        if(guidesContainer){
+          guidesContainer.innerHTML="";
+        }
+          break;
+      case "Forms":
+        if(formsContainer){
+          formsContainer.innerHTML="";
+        }
+        break;
+      case "General":
+        if(generalContainer){
+          generalContainer.innerHTML="";
+        }
+        break;
+      case "Management":
+        if(managementContainer){
+          managementContainer.innerHTML="";
+        }
+        break;
+      case "Custom":
+        if(customContainer){
+          customContainer.innerHTML="";
+        }
+        break;
+    }
 
-    //if(testContainer){testContainer.innerHTML="";}
+    if(this.properties.dataResults.length > 0){
 
-    //console.log("folder dataResults");
-    //console.log(this.properties.dataResults);
-    console.log("results length ",results.length);
-
-    if(results.length > 0){
-
-      //alert("fetching folders");
-
-      switch (libraryName) {
-        case "Policies":        
-          if(policyContainer){
-            policyContainer.innerHTML="";
-          }
-          break;
-        case "Procedures":
-          if(procedureContainer){
-            procedureContainer.innerHTML="";
-          }
-          break;
-        case "Guides":
-          this.domElement.querySelector("#guidesFolders")!.innerHTML="";
-          break;
-        case "Forms":
-          this.domElement.querySelector("#formsFolders")!.innerHTML="";
-          break;
-        case "General":
-          //this.domElement.querySelector("#generalFolders")!.innerHTML="";
-          break;
-        case "Management":
-          //this.domElement.querySelector("#managementFolders")!.innerHTML="";
-          break;
-        case "Custom":
-          //this.domElement.querySelector("#customFolders")!.innerHTML="";
-          break;
-      }
-
-      for(let x=0;x<results.length;x++){
+      for(let x=0;x<this.properties.dataResults.length;x++){
         //console.log("results item",results[x]);
 
-        folderName = results[x].FieldValuesAsText.DC_x005f_Folder;            
-        division = results[x].FieldValuesAsText.DC_x005f_Division;
+        folderName = this.properties.dataResults[x].FieldValuesAsText.DC_x005f_Folder;            
+        subFolderName1 = this.properties.dataResults[x].FieldValuesAsText.DC_x005f_SubFolder01;
+        subFolderName2 = this.properties.dataResults[x].FieldValuesAsText.DC_x005f_SubFolder02;
+        subFolderName3 = this.properties.dataResults[x].FieldValuesAsText.DC_x005f_SubFolder03;
+      
+/*
+<div class="accordion accordion-flush" id="accordionFlushExample">
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="flush-headingOne">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
+        Accordion Item #1
+      </button>
+    </h2>
+    <div id="flush-collapseOne" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordionFlushExample">
+      <div class="accordion-body">Placeholder content for this accordion, which is intended to demonstrate the <code>.accordion-flush</code> class. This is the first item's accordion body.</div>
+    </div>
+  </div>
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="flush-headingTwo">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseTwo" aria-expanded="false" aria-controls="flush-collapseTwo">
+        Accordion Item #2
+      </button>
+    </h2>
+    <div id="flush-collapseTwo" class="accordion-collapse collapse" aria-labelledby="flush-headingTwo" data-bs-parent="#accordionFlushExample">
+      <div class="accordion-body">Placeholder content for this accordion, which is intended to demonstrate the <code>.accordion-flush</code> class. This is the second item's accordion body. Let's imagine this being filled with some actual content.</div>
+    </div>
+  </div>
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="flush-headingThree">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseThree" aria-expanded="false" aria-controls="flush-collapseThree">
+        Accordion Item #3
+      </button>
+    </h2>
+    <div id="flush-collapseThree" class="accordion-collapse collapse" aria-labelledby="flush-headingThree" data-bs-parent="#accordionFlushExample">
+      <div class="accordion-body">Placeholder content for this accordion, which is intended to demonstrate the <code>.accordion-flush</code> class. This is the third item's accordion body. Nothing more exciting happening here in terms of content, but just filling up the space to make it look, at least at first glance, a bit more representative of how this would look in a real-world application.</div>
+    </div>
+  </div>
+</div>
+*/
 
-        if(folderName !== "" && division !== ""){
-          subFolderName1 = results[x].FieldValuesAsText.DC_x005f_SubFolder01;
-          subFolderName2 = results[x].FieldValuesAsText.DC_x005f_SubFolder02;
-          subFolderName3 = results[x].FieldValuesAsText.DC_x005f_SubFolder03;
+        if(folderName!==folderPrev){
 
-          //if(division !== divisionPrev){
-          //  folderString += `<h4>${division}</h4>`;
-          //  divisionPrev = division;
-          //}
+          folderHTML = '<div class="accordion accordion-flush" id="accordionFlushExample">';
 
-          if(folderName!==folderNamePrev){
-            //folderString += `<div>
-            //                  <h5 class="folderTitle">${folderName}</h5>
-            //                </div>`;
-            //this.properties.folderArray.push(results[x]);
-            folderHTML += await this.makeHTML(x,division,folderName,subFolderName1,subFolderName2,subFolderName3);
-            folderNamePrev=folderName;            
+          if (folderName !== '' && subFolderName1 === '' ){ 
+            if(folderName.replace(/\s+/g, "")!==undefined){
+              folderNameID=folderName.replace(/\s+/g, "")+"_"+x;
+            }else{
+              folderNameID=folderName+"_"+x;
+            }
+            this.properties.folderArray.push(folderName,folderNameID);
+
+            fcount = await this.fileCount(folderName,"","","");
+
+            folderHTML += `  <div class="accordion-item">
+                              <h2 class="accordion-header" id="flush-headingOne">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
+                                  ${folderName}
+                                </button>
+                              </h2>
+                            </div>`;                        
           }
 
-          //if(subFolderName1!==""){
-          //    folderString += `<div class="ms-1">
-          //                        <h5 class="folderTitle">${subFolderName1}</h5>
-          //                      </div>`;  
+          if(folderName !== '' && subFolderName1 !== '' && subFolderName2 === '' && subFolderName3 === ''){ 
+            sf1count = await this.fileCount(folderName,subFolderName1,"","");
 
-          //  if(subFolderName2!==""){
-          //    folderString += `<div class="ms-2">
-          //                        <h5 class="folderTitle">${subFolderName2}</h5>
-          //                      </div>`;
+            folderHTML+=`<div class="accordion-item">
+                          <h2 class="accordion-header" id="folderHeader${x}">
+                            <button class="btn btn-primary accordion-button" id="${folderNameID}" type="button" data-bs-toggle="collapse" data-bs-target="#accordion_${folderNameID}" aria-expanded="true" aria-controls="collapseSF1">
+                              <i class="bi bi-folder2"></i><a href="#">${folderName}</a>                    
+                            </button>
+                          </h2>
+                          <div id="accordion_${folderNameID}" class="accordion-collapse collapse" aria-labelledby="headingSF1" data-bs-parent="#accordionPF${x}">
+                            <div class="accordion-body">
+                              <h2 class="accordion-header" id="subFolderHeader${x}">
+                                <button class="btn btn-primary" id="${subFolderName1ID}" type="button">
+                                  <i class="bi bi-folder2"></i>
+                                  ${subFolderName1}
+                                </button>
+                              </h2>
+                            </div>
+                          </div>
+                        </div>`;
 
-          //    if(subFolderName3 !==""){                
-          //        folderString += `<div class="ms-2">
-          //                            <h5 class="folderTitle">${subFolderName2}</h5>
-          //                          </div>`;
-          //    }
-          //  }
-          //}
-    
-          //if(testContainer){testContainer.innerHTML=folderString;}     
+          } 
           
-/*          
-          switch(division){
-            case "Assessments":
-              
-              // *** check is a new folder, if so create new folder string and add to DOM
-              if(folderName !== asm_folderPrev){
+          if (folderName !== '' && subFolderName1 !== '' && subFolderName2 !== '' && subFolderName3 === ''){ 
+            sf2count = await this.fileCount(folderName,subFolderName1,subFolderName2,"");
 
-                if(division !== divisionPrev){
-                  folderHTML+=`<h4>${division}</h4>`;
-                } 
+            folderHTML+=`<div class="accordion-item">
+                          <h2 class="accordion-header" id="folderHeader${x}">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accordion_${folderNameID}" aria-expanded="true" aria-controls="collapseSF2">
+                              <i class="bi bi-folder2"></i><a href="#" id="folderName">${folderName}</a>                    
+                            </button>
+                          </h2>
+                          <div id="accordion_${folderNameID}" class="accordion-collapse collapse" aria-labelledby="folderHeader${x}" data-bs-parent="#accordionPF${x}">
+                            <div class="accordion-body">
+                              <div class="accordion" id="${subFolderID}">
+                                <div class="accordion-item">
+                                  <h2 class="accordion-header" id="subFolder1Header${x}">
+                                    <button class="btn btn-primary accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accordion_${subFolderName1ID}" aria-expanded="true" aria-controls="collapseOne">
+                                      ${subFolder1Name}
+                                    </button>
+                                  </h2>
+                                  <div id="accordion_${subFolderName1ID}" class="accordion-collapse collapse" aria-labelledby="subFolder1Header${x}" data-bs-parent="#${subFolder01ID}">
+                                    <div class="accordion-body">
+                                      <div class="accordion" id="accordion_${subFolderName2ID}">
+                                        <div class="accordion-item">
+                                          <h2 class="accordion-header" id="subFolder2Header${x}">
+                                            <button class="btn btn-primary" type="button">
+                                              <i class="bi bi-folder2"></i>
+                                              ${subFolder2Name}
+                                            </button>
+                                          </h2>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>`;                                                          
 
-                folderHTML += await this.makeHTML(x,division,folderName,subFolderName1,subFolderName2,subFolderName3);
-                asm_folderPrev = folderName;
-              }                          
-              divisionPrev = division;
-              break;
+          } 
+          
+          if (folderName !== '' && subFolderName1 !== '' && subFolderName2 !== '' && subFolderName3 !== ''){ 
+            sf3count = await this.fileCount(folderName,subFolderName1,subFolderName2,subFolderName3);
 
-            case "Central":
-
-              // *** check is a new folder, if so create new folder string and add to DOM
-              if(folderName !== cen_folderPrev){
-                
-                if(division !== divisionPrev){
-                  folderHTML+=`<h4>${division}</h4>`;
-                }
-
-                folderHTML += await this.makeHTML(x,division,folderName,subFolderName1,subFolderName2,subFolderName3);               
-                cen_folderPrev = folderName;
-              }
-              divisionPrev = division;
-              break;
-          }
-*/         
-        }
+            folderHTML+=`<div class="accordion-item"> 
+                          <h2 class="accordion-header" id="folderHeader${x}">
+                            <button class="accordion-button text-left ${styles.folderBtn}" type="button" data-bs-toggle="collapse" data-bs-target="#${folderID}" aria-expanded="true" aria-controls="documents">
+                              <i class="bi bi-folder2"></i><a href="#" id="folderName" class="text-white ms-1">${folderName}</a>                    
+                            </button>
+                          </h2>
+                          <div id="${folderID}" class="accordion-collapse collapse" aria-labelledby="folderHeader${x}" data-bs-parent="#accordionPF${x}">
+                            <div class="accordion-body">
+                              <div class="accordion" id="${subFolder01ID}">
+                                <div class="accordion-item">
+                                  <h2 class="accordion-header" id="subHeaderSF3${x}">
+                                    <button class="btn btn-primary accordion-button ${styles.folderBtn}" type="button" data-bs-toggle="collapse" data-bs-target="#${subFolder02ID}" aria-expanded="true" aria-controls="collapseSF3-1">
+                                      <i class="bi bi-folder2"></i><a href="#" id="subfolder1Name">${subFolder1Name}</a>                   
+                                    </button>
+                                  </h2>
+                                <div id="collapseSF3-1" class="accordion-collapse collapse" aria-labelledby="headingSF3-1" data-bs-parent="${subFolder01ID}">
+                                  <div class="accordion-body">
+                                    <div class="accordion" id="${subFolder02ID}">
+                                      <div class="accordion-item">
+                                        <h2 class="accordion-header" id="headerSF3-2">
+                                          <button class="btn btn-primary accordion-button ${styles.folderBtn}" type="button" data-bs-toggle="collapse" data-bs-target="#${subFolder03ID}" aria-expanded="true" aria-controls="collapseSF3-2">
+                                            <i class="bi bi-folder2"></i><a href="#" id="subfolder2Name">${subFolder2Name}</a>                    
+                                          </button>
+                                        </h2>
+                                        <div id="${subFolder03ID}" class="accordion-collapse collapse" aria-labelledby="subFolder3Header${x}" data-bs-parent="${subFolder02ID}">
+                                          <div class="accordion-body">
+                                            <h2 class="accordion-header" id="subFolder3Header${x}">
+                                              <button class="btn btn-primary ${styles.folderBtn}" type="button" aria-expanded="true" aria-controls="collapseSF3-3">
+                                              <i class="bi bi-folder2"></i><a href="#" id="subfolder3Name">${subFolder3Name}</a>                   
+                                              </button>
+                                            </h2>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>`;
+          } 
+          folderNamePrev=folderName;            
+          
+        }  
       }  // *** end of for loop
 
       folderHTML+=`</div></div>`;
@@ -323,576 +395,67 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
           }
           break;
         case "Guides":
-          this.domElement.querySelector("#guidesFolders")!.innerHTML=folderHTML;
+          if(guidesContainer){
+            guidesContainer.innerHTML=folderHTML;
+          }
           break;
         case "Forms":
-          this.domElement.querySelector("#formsFolders")!.innerHTML=folderHTML;
+          if(formsContainer){
+            formsContainer.innerHTML=folderHTML;
+          }
           break;
         case "General":
-          //this.domElement.querySelector("#generalFolders")!.innerHTML=folderHTML;
+          if(generalContainer){
+            generalContainer.innerHTML=folderHTML;
+          }
           break;
         case "Management":
-          //this.domElement.querySelector("#managementFolders")!.innerHTML=folderHTML;
+          if(managementContainer){
+            managementContainer.innerHTML=folderHTML;
+          }
           break;
         case "Custom":
-          //this.domElement.querySelector("#customFolders")!.innerHTML=folderHTML;
+          if(customContainer){
+            customContainer.innerHTML=folderHTML;
+          }
           break;
       }
     }
   }
 
-/*          
-          if(division !== divisionPrev){
-            if(folderName !== cen_folderPrev || folderName !== asm_folderPrev){
-
-              if(division !== divisionPrev){
-                folderHTML+=`<h4>${division}</h4>`;
-              }
-
-              if(subFolderName1 !== ""){
-                console.log(division," ",folderName," ",subFolderName1);
-                folderHTML+=`<a href="#" class="text-white ms-1" >${folderName}</a>`;
-              }else{
-                console.log(division," ",folderName);
-                folderHTML+=`<a href="#" class="text-white ms-1" >${folderName}</a>`;
-              }
-            }
-
-            switch(division){
-              case 'Assessments':
-                asm_folderPrev = folderName;
-                break;
-              case 'Central':
-                cen_folderPrev = folderName;
-                break;
-            }
-          }
-          divisionPrev = division;  
-          
-          // *** check is a new folder, if so create new folder string and add to DOM
-          if(folderName !== folderPrev){
-              
-            if(division !== divisionPrev){
-              folderHTML+=`<h4>${division}</h4>`;
-            }
-            
-            // *** check if folderName has spaces or special characters and remove them for the ID.
-            if(folderName.replace(/\s+/g, "")!==undefined){
-              folderNameID=folderName.replace(/\s+/g, "")+"_"+x;
-            }else{
-              folderNameID=folderName+"_"+x;
-            }
-            this.properties.folderArray.push(folderName,folderNameID);
-            fcount = await this.fileCount(folderName);
-
-            //console.log("CHK folder ",folderName);          
-*/
- 
-  private async makeHTML(x:number,division:string,folderName:string,subFolderName1:string,subFolderName2:string,subFolderName3:string):Promise<string>{
-
-    //alert("make html "+division);
-    
-    let fcount:any=0;
-    let sf1count:any=0;
-    let sf2count:any=0;
-    let sf3count:any=0;
-
-    let folderHTML: string = "";
-    let folderHTMLEnd : string = "";
-    
-    // *** folder id's for event listeners on button click
-    let folderNameID : string = ""; 
-    let subFolderName1ID: string = "";
-    let subFolderName2ID: string = "";
-    let subFolderName3ID: string = "";
-
-    // *** check if folderName has spaces or special characters and remove them for the ID.
-    if(folderName.replace(/\s+/g, "")!==undefined){
-      folderNameID=folderName.replace(/\s+/g, "")+"_"+x;
-    }else{
-      folderNameID=folderName+"_"+x;
-    }
-    this.properties.folderArray.push(division,folderName,folderNameID);
-    fcount = await this.fileCount(division,folderName);
-
-    if(subFolderName1!==``){       
-      folderHTML+=`<div class="accordion" id="accordionPF-${x}">
-                    <div class="accordion-item">
-                      <h2 class="accordion-header" id="folder_${folderNameID}">
-                        <button class="btn btn-primary accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSF1-${x}" aria-expanded="true" aria-controls="collapseSF1-${x}">
-                          <i class="bi bi-folder2"></i>
-                          <a href="#" class="text-white ms-1" id="${folderNameID}">${folderName}</a>
-                          <span class="badge bg-secondary">${fcount}</span>                    
-                        </button>
-                      </h2>`;
-    }else{
-      folderHTML+=`<div class="accordion" id="accordionPF-${x}">
-                    <div class="accordion-item">
-                      <h2 class="accordion-header" id="folder_${folderNameID}">
-                        <button class="btn btn-primary" type="button" data-bs-toggle="collapse" aria-expanded="true" aria-controls="collapseSF1-${x}">
-                          <i class="bi bi-folder2"></i>
-                          <a href="#" class="text-white ms-1" id="${folderNameID}">${folderName}</a>
-                          <span class="badge bg-secondary">${fcount}</span>                    
-                        </button>
-                      </h2>`;
-    }
-    
-    if(subFolderName1 !== ''){
-      //console.log("CHK subfolder1 ",subFolderName1);
-
-      // *** check if subfolderName has spaces or special characters and remove them for the ID.
-      if(subFolderName1.replace(/\s+/g, "")!==undefined){
-        subFolderName1ID=subFolderName1.replace(/\s+/g, "")+"_"+x;
-      }else{
-        subFolderName1ID=subFolderName1+"_"+x;
-      }
-      this.properties.subFolder1Array.push(division,subFolderName1,subFolderName1ID);
-      sf1count = await this.fileCount(division,subFolderName1);
-
-      if(subFolderName2 !== ``){
-        folderHTML+=`<div id="collapseSF1-${x}" class="accordion-collapse collapse" aria-labelledby="headingSF1-${x}" data-bs-parent="#accordionPF-${x}">
-                      <div class="accordion-body"> 
-                        <div class="accordion" id="accordionSF1-${x}">                              
-                          <div class="accordion-item">
-                            <h2 class="accordion-header" id="SF1_${subFolderName1ID}">
-                              <button class="btn btn-primary accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSF2-${x}" aria-expanded="false" aria-controls="collapseSF2-${x}">
-                                <i class="bi bi-folder2"></i>
-                                <a href="#" class="text-white ms-1" id="${subFolderName1ID}">${subFolderName1}</a>
-                                <span class="badge bg-secondary">${sf1count}</span>                                        
-                              </button>
-                            </h2>`;
-        folderHTMLEnd+=`</div></div></div></div>`;
-
-      }else{
-        folderHTML+=`<div id="collapseSF1-${x}" class="ms-1 accordion-collapse collapse" aria-labelledby="headingSF1" data-bs-parent="#accordionPF-${x}">
-                      <div class="accordion-body">
-                        <div class="accordion-item">
-                          <h2 class="accordion-header" id="SF1_${subFolderName1ID}">
-                            <button class="btn btn-primary" type="button" data-bs-toggle="collapse" aria-expanded="true" aria-controls="collapseSF1">
-                              <i class="bi bi-folder2"></i>
-                              <a href="#" class="text-white ms-1" id="${subFolderName1ID}">${subFolderName1}</a>
-                              <span class="badge bg-secondary">${sf1count}</span>                    
-                            </button>
-                          </h2>
-                        </div>
-                      </div>
-                    </div>`;
-      }               
-    }
-
-    if(subFolderName2 !== ''){
-      //console.log("CHK subfolder2 ",subFolderName2);  
-
-      // *** check if subfolderName has spaces or special characters and remove them for the ID.
-      if(subFolderName2.replace(/\s+/g, "")!==undefined){
-        subFolderName2ID=subFolderName2.replace(/\s+/g, "")+"_"+x;
-      }else{
-        subFolderName2ID=subFolderName2+"_"+x;
-      }
-      this.properties.subFolder2Array.push(division,subFolderName2,subFolderName2ID);
-      sf2count = await this.fileCount(division,subFolderName2);
-
-      if(subFolderName3 !==``){
-        folderHTML+=`<div id="collapseSF2-${x}" class="accordion-collapse collapse" aria-labelledby="headingSF2" data-bs-parent="accordionSF1-${x}">
-                      <div class="accordion-body">
-                        <div class="accordion" id="accordionSF2-${x}">
-                          <div class="accordion-item">
-                            <h2 class="accordion-header" id="SF2_${subFolderName2ID}">
-                              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSF3-${x}" aria-expanded="false" aria-controls="collapseSF2-${x}">
-                                <i class="bi bi-folder2"></i>
-                                <a href="#" class="text-white ms-1">${subFolderName2}</a>
-                                <span class="badge bg-secondary">${sf2count}</span>                    
-                              </button>
-                            </h2>`;
-        folderHTMLEnd+=`</div></div></div></div>`;
-
-      }else{
-        folderHTML+=`<div id="collapseSF2-${x}" class="accordion-collapse collapse" aria-labelledby="headingSF2" data-bs-parent="accordionSF1-${x}">
-                      <div class="accordion-body">
-                        <div class="accordion-item">
-                          <h2 class="accordion-header" id="SF2_${subFolderName2ID}">
-                            <button class="btn btn-primary" type="button" data-bs-toggle="collapse" aria-expanded="false" aria-controls="collapseSF2-${x}">
-                              <i class="bi bi-folder2"></i>
-                              <a href="#" class="text-white ms-1">${subFolderName2}</a>
-                              <span class="badge bg-secondary">${sf2count}</span>                    
-                            </button>
-                          </h2>
-                        </div>
-                      </div>
-                    </div>`;
-      }               
-    }   
-
-    if(subFolderName3 !== ''){
-
-      // *** check if subfolderName has spaces or special characters and remove them for the ID.
-      if(subFolderName3.replace(/\s+/g, "")!==undefined){
-        subFolderName3ID=subFolderName3.replace(/\s+/g, "")+"_"+x;
-      }else{
-        subFolderName3ID=subFolderName3+"_"+x;
-      }
-      this.properties.subFolder3Array.push(division,subFolderName3,subFolderName3ID);
-      sf3count = await this.fileCount(division,subFolderName3);
-
-      folderHTML+=`<div id="collapseSF3-${x}" class="accordion-collapse collapse" aria-labelledby="headingSF3" data-bs-parent="accordionSF2-${x}">
-                    <div class="accordion-body">
-                      <div class="accordion-item">
-                        <h2 class="accordion-header" id="SF3_${subFolderName3ID}">
-                          <button class="btn btn-primary" type="button" data-bs-toggle="collapse" aria-expanded="false" aria-controls="collapseSF3-${x}">
-                            <i class="bi bi-folder2"></i>
-                            <a href="#" class="text-white ms-1" id="sf3ID">${subFolderName3}}</a>
-                            <span class="badge bg-secondary">${sf3count}</span>                    
-                          </button>
-                        </h2>
-                      </div>
-                    </div>
-                  </div>`;
-    }
-    folderHTML+=folderHTMLEnd;
-    return folderHTML;
-  }
-
-  private async fileCount(division:string,folderName:string): Promise<number>{
+  private async fileCount(folder:string,subfolder1:string,subfolder2:string,subfolder3:string): Promise<number>{
 
     let counter : number = 0;
-    for (let c=0;c<this.properties.dataResults.length;c++) {
-      if(this.properties.dataResults[c].FieldValuesAsText.DC_x005f_Division === division){
-        if (this.properties.dataResults[c].FieldValuesAsText.DC_x005f_Folder === folderName){
-          counter++;
-        } 
-        if (this.properties.dataResults[c].FieldValuesAsText.DC_x005f_SubFolder01 === folderName){
-          counter++;
-        } 
-        if (this.properties.dataResults[c].FieldValuesAsText.DC_x005f_SubFolder02 === folderName){
-          counter++;
-        } 
-        if (this.properties.dataResults[c].FieldValuesAsText.DC_x005f_SubFolder03 === folderName){
-          counter++;
-        }
+    let fCounter : number = 0;
+    let sf1Counter : number = 0;
+    let sf2Counter : number = 0;
+    let sf3Counter : number = 0;
+
+    try{
+      for (let c=0;c<this.properties.dataResults.length;c++) {
+        const folderName = this.properties.dataResults[c].FieldValuesAsText.DC_x005f_Folder;            
+        const subFolderName1 = this.properties.dataResults[c].FieldValuesAsText.DC_x005f_SubFolder01;
+        const subFolderName2 = this.properties.dataResults[c].FieldValuesAsText.DC_x005f_SubFolder02;
+        const subFolderName3 = this.properties.dataResults[c].FieldValuesAsText.DC_x005f_SubFolder03;
+    
+        //console.log("folder",folder,"folderName",folderName,"SubFolder1",subFolderName1);
+
+        if ( folderName === folder && subFolderName1 === '' ){ fCounter++; }
+        if ( folderName === folder && subFolderName1 === subfolder1 && subFolderName2 === '' && subFolderName3 === ''){ sf1Counter++; } 
+        if ( folderName === folder && subFolderName1 === subfolder1 && subFolderName2 === subfolder2 && subFolderName3 === ''){ sf2Counter++; } 
+        if ( folderName === folder && subFolderName1 === subfolder1 && subFolderName2 === subfolder2 && subFolderName3 === subfolder3){ sf3Counter++; } 
       } 
+      
+      if(fCounter>0){counter = fCounter;}
+      if(sf1Counter>0){counter = sf1Counter;}
+      if(sf2Counter>0){counter = sf2Counter;}
+      if(sf3Counter>0){counter = sf3Counter;}
+    } catch (err) {
+      //await this.addError(this.properties.siteName, "fileCount", err.message);
     }
     return counter;
   } 
-
-  private setFolderListeners(libraryName:string): void {
-    //console.log("setFolderListeners called");
-    
-    //this.properties.getFilesCallFlag = false;
-    //console.log("setfolderlisteners callflag="+this.properties.getFilesCallFlag);
-
-    try {
-
-      // *** event listeners for parent folders      
-      if (this.properties.folderArray.length > 0) {
-
-        //const folderNameID = this.properties.folderArray.filter(function (value, index, ar) {
-        //  console.log("folderNameID ",index % 3);
-        //  return (index % 3 > 0);
-        //});
-
-        //const folderName = this.properties.folderArray.filter(function (value, index, ar) {         
-        //  return (index % 3 === 0);
-        //});
-
-        //const division = this.properties.folderArray.filter(function (value, index, ar) {
-        //  if(index % 3 === 0){
-        //    console.log("division ",value);
-        //  }
-        //  return (index % 3 === 0);
-        //});
-
-        const folderNameID = this.properties.folderArray.filter((value, index) => index % 3 === 3 - 1);
-        const folderName = this.properties.folderArray.filter((value, index) => index % 3 === 3 - 2);
-        //const division = this.properties.folderArray.filter((value, index) => index % 3 === 3 - 3);
-
-        console.log("folderNameID ",folderNameID);
-        console.log("folderName ",folderName);
-        //console.log("division ",division);
-
-        for (let x = 0; x < folderNameID.length; x++) {
-          document.getElementById("folder_" + folderNameID[x])
-            ?.addEventListener("click", (_e: Event) => {
-              this.getFiles(libraryName,folderName[x]);
-
-              if (document.querySelector("#" + libraryName + "Folders button.active") !== null) {
-                document
-                  .querySelector("#" + libraryName + "Folders button.active")
-                  ?.classList.remove("active");
-              }
-        
-              const elem = document.querySelector("#folder_" + folderNameID[x]);
-              elem?.classList.add('active');
-            });
-        }
-      }
-
-      // *** event listeners for subfolders level 1      
-      if (this.properties.subFolder1Array.length > 0) {
-        const subFolder1NameID = this.properties.subFolder1Array.filter((value, index) => index % 3 === 3 - 1);
-        const subFolder1Name = this.properties.subFolder1Array.filter((value, index) => index % 3 === 3 - 2);
-        //const subFolder1division = this.properties.folderArray.filter((value, index) => index % 3 === 3 - 3);
-
-        for (let x = 0; x < subFolder1NameID.length; x++) {
-          document.getElementById("SF1_" + subFolder1NameID[x])
-            ?.addEventListener("click", (_e: Event) => {
-              //console.log("subfolder1name ",subFolder1Name[x]);
-              this.getFiles(libraryName,subFolder1Name[x]);
-
-              if (document.querySelector("#" + libraryName + "Folders button.active") !== null) {
-                document
-                  .querySelector("#" + libraryName + "Folders button.active")
-                  ?.classList.remove("active");
-              }
-        
-              const elem = document.querySelector("#SF1_" + subFolder1NameID[x]);
-              elem?.classList.add('active');
-
-            });
-        }
-      }
-
-      // *** event listeners for subfolders level 2      
-      if (this.properties.subFolder2Array.length > 0) {
-
-        const subFolder2NameID = this.properties.subFolder2Array.filter(function (value, index, ar) {
-          return (index % 2 > 0);
-        });
-
-        const subFolder2Name = this.properties.subFolder2Array.filter(function (value, index, ar) {
-          return (index % 2 === 0);
-        });
-
-        for (let x = 0; x < subFolder2NameID.length; x++) {
-          
-          document.getElementById("SF2_" + subFolder2NameID[x])
-            ?.addEventListener("click", (_e: Event) => {
-              this.getFiles(libraryName,subFolder2Name[x]);
-
-              if (document.querySelector("#" + libraryName + "Folders button.active") !== null) {
-                document
-                  .querySelector("#" + libraryName + "Folders button.active")
-                  ?.classList.remove("active");
-              }
-        
-              const elem = document.querySelector("#SF2_" + subFolder2NameID[x]);
-              elem?.classList.add('active');
-
-            });
-        }
-      }      
-
-      // *** event listeners for subfolders level 3      
-      if (this.properties.subFolder3Array.length > 0) {
-
-        const subFolder3NameID = this.properties.subFolder3Array.filter(function (value, index, ar) {
-          return (index % 2 > 0);
-        });
-
-        const subFolder3Name = this.properties.subFolder3Array.filter(function (value, index, ar) {
-          return (index % 2 === 0);
-        });
-
-        for (let x = 0; x < subFolder3NameID.length; x++) {
-          
-          document.getElementById("SF3_" + subFolder3NameID[x])
-            ?.addEventListener("click", (_e: Event) => {
-              this.getFiles(libraryName,subFolder3Name[x]);
-
-              if (document.querySelector("#" + libraryName + "Folders button.active") !== null) {
-                document
-                  .querySelector("#" + libraryName + "Folders button.active")
-                  ?.classList.remove("active");
-              }
-        
-              const elem = document.querySelector("#SF3_" + subFolder3NameID[x]);
-              elem?.classList.add('active');
-
-            });
-        }
-      } 
-
-    } catch (err) {
-      //console.log("setFolderListeners", err.message);
-      //this.addError(this.properties.siteName, "setFolderListeners", err.message);
-    }    
-    //console.log("setFolderListeners completed");
-  }   
-
-  private getFiles(libraryName:string,folderName:string) :void {
-    //alert("getfiles for "+folderName);
-    
-    let divisionPrev : string = "";
-    let fileHTML: string = "";
-    let powerUserTools: string = "";
-    let draftText: string = "";
-    let fileTypeIcon: string = "";
-
-    const policyContainer : Element | null = this.domElement.querySelector("#policiesFiles");
-    const procedureContainer : Element | null = this.domElement.querySelector("#proceduresFiles");
-
-    switch (libraryName) {
-      case "Policies":        
-        if(policyContainer){
-          policyContainer.innerHTML="";
-        }
-        break;
-      case "Procedures":
-        if(procedureContainer){
-          procedureContainer.innerHTML="";
-        }
-        break;
-      case "Guides":
-
-        break;
-      case "Forms":
   
-        break;
-      case "General":
-
-        break;
-      case "Management":
-
-        break;
-      case "Custom":
-
-        break;
-    }
-
-    for(let f=0;f<this.properties.dataResults.length;f++){
-      let fileFlag : boolean = false;  
-      const division : string = this.properties.dataResults[f].FieldValuesAsText.DC_x005f_Division;
-      const Folder : string = this.properties.dataResults[f].FieldValuesAsText.DC_x005f_Folder;
-      const SubFolder1 : string = this.properties.dataResults[f].FieldValuesAsText.DC_x005f_SubFolder01;
-      const SubFolder2 : string = this.properties.dataResults[f].FieldValuesAsText.DC_x005f_SubFolder02;
-      const SubFolder3 : string = this.properties.dataResults[f].FieldValuesAsText.DC_x005f_SubFolder03;
-      const fileName : string = this.properties.dataResults[f].FieldValuesAsText.FileLeafRef;
-      const fileStatus: string = this.properties.dataResults[f].FieldValuesAsText.OData__x005f_ModerationStatus;
-      const fileType: string = this.properties.dataResults[f].FieldValuesAsText.File_x005f_x0020_x005f_Type;
-      const fileURL: string = this.properties.dataResults[f].ServerRedirectedEmbedUrl;
-      const fileID: string = this.properties.dataResults[f].ID;
-
-      if(Folder === folderName && SubFolder1 === ''){
-        console.log("folderName ",folderName," Folder ",Folder);
-        fileFlag = true;
-      }
-
-      if( SubFolder1 === folderName && SubFolder2 === '' ){
-        console.log("subFolder ",folderName," SubFolder1 ",SubFolder1);
-        fileFlag = true;
-      }
-
-      if( SubFolder2 === folderName && SubFolder3 === "" ){
-        fileFlag = true;
-      }
-
-      if( SubFolder3 === folderName){
-        fileFlag = true;
-      }
-      
-      if(fileFlag){
-  
-        if(division !== divisionPrev){
-          fileHTML+=`<h4>${division}</h4>`;
-        }        
-        divisionPrev = division;
-
-        switch (fileType) {
-          case "pdf":
-            fileTypeIcon = "bi bi-file-earmark-pdf text-danger";
-            break;
-          case "doc":
-          case "docx":
-          case "dotx":
-            fileTypeIcon = "bi bi-file-earmark-word text-primary";
-            break;
-          case "xls":
-          case "xlsx":
-          case "xlsm":
-          case "xltx":
-            fileTypeIcon = "bi bi-file-earmark-excel text-sucess";
-            break;
-          case "ppt":
-          case "pptx":
-          case "potx":
-            fileTypeIcon = "bi bi-file-earmark-ppt text-warning";
-            break;
-          case "xsn":
-            fileTypeIcon = "bi bi-file-earmark-excel text-secondary";
-            break;
-          case "msg":
-            fileTypeIcon = "bi bi-envelope-at text-info";
-            break;
-          case "zip":
-          case "rar":
-            fileTypeIcon = "bi bi-file-earmark-zip text-danger";
-            break;
-          default:
-            fileTypeIcon = "bi bi-file-earmark text-dark";
-            break;
-        }
-
-        if (this.properties.isDCPowerUser) {
-          switch (fileStatus) {
-            case "Approved":
-              powerUserTools = `<a class="docDelete" id="doc${fileID}Delete" href="#" title="Delete Document"><i class="bi bi-trash"></i></a >`;
-              draftText = "";
-              break;
-            case "Draft":
-              powerUserTools = `<a class="docDelete" id="doc${fileID}Delete" href="#" title="Delete Document"><i class="bi bi-trash"></i></a>
-                              <a class="docPublish" id="doc${fileID}Publish" href="#" title="Publish Draft Document"><i class="bi bi-file-check"></i></a>`;
-              draftText = '<i class="text-danger">draft</i>';
-              break;
-            default:
-              powerUserTools = "";
-              draftText = "";
-              break;
-          }
-        }
-
-        fileHTML += `<div class="row fileRow" id="fileRow${fileID}">
-                      <div class="col-2">
-                        ${powerUserTools}
-                        <i class="${fileTypeIcon}" title="file icon"></i>
-                        <a class="docCopyLink" id="doc${fileID}Link" href="#" title="Copy File Link to Clipboard"><i class="bi bi-link"></i></a>
-                      </div>
-                      <div class="col-10">
-                        ${draftText}
-                        <a href="${fileURL}" title="file name" target="_blank"><p>${fileName}</p></a>
-                      </div>
-                    </div>`;
-
-        switch (libraryName) {
-          case "Policies":
-            if(policyContainer){
-              policyContainer.innerHTML=fileHTML;
-            }
-            break;
-          case "Procedures":
-            if(procedureContainer){
-              procedureContainer.innerHTML=fileHTML;
-            }
-            break;
-          case "Guides":
-
-            break;
-          case "Forms":
-
-            break;
-          case "General":
-
-            break;
-          case "Management":
-
-            break;
-          case "Custom":
-
-            break;
-        }                             
-      }
-    }
-    return;
-  }
-
   public render(): void {
 
     this.properties.URL = this.context.pageContext.web.absoluteUrl;
@@ -938,30 +501,45 @@ export default class TestFoldersWebPart extends BaseClientSideWebPart<ITestFolde
         </div>
 
         <div class="tab-content" id="v-pills-tabContent">
-          <div class="tab-pane fade" id="policies" role="tabpanel" aria-labelledby="policies" tabindex="0"> 
+          
+        <div class="tab-pane fade" id="policies" role="tabpanel" aria-labelledby="policies" tabindex="0"> 
             <div class="row">
-              <div class="col-auto" id="policiesFolders">
-                <h4 class="text-black">Folders</h4>
-              </div>
-              <div class="col" id="policiesFiles">
-                <h4 class="text-black">Files</h4>
-              </div>
+              <div class="col-auto" id="policiesFolders"></div>
+              <div class="col" id="policiesFiles"></div>
             </div>               
           </div>
+          
           <div class="tab-pane fade" id="procedures" role="tabpanel" aria-labelledby="procedures" tabindex="0">
             <div class="row">
-              <h4 class="text-black">Folders</h4>
               <div class="col-auto" id="proceduresFolders"></div>
               <div class="col" id="proceduresFiles"></div>
             </div>               
-          </div> 
+          </div>
+
+          <div class="tab-pane fade" id="guides" role="tabpanel" aria-labelledby="guidess" tabindex="0">
+            <div class="row">
+              <div class="col-auto" id="guidesFolders"></div>
+              <div class="col" id="guidesFiles"></div>
+            </div>               
+          </div>
+
+          <div class="tab-pane fade" id="forms" role="tabpanel" aria-labelledby="forms" tabindex="0">
+            <div class="row">
+              <div class="col-auto" id="formsFolders"></div>
+              <div class="col" id="formsFiles"></div>
+            </div>               
+          </div>
+
+          <div class="tab-pane fade" id="general" role="tabpanel" aria-labelledby="general" tabindex="0">
+            <div class="row">
+              <div class="col-auto" id="generalFolders"></div>
+              <div class="col" id="generalFiles"></div>
+            </div>               
+          </div>
+
         </div>
       </div>
 
-      <div>
-        <h4>Test Folders</h4>
-        <div id="testFolders"></div>
-      </div>
     </section>`;
 
     document.getElementById('policies_btn')?.addEventListener("click", (_e:Event) => this._getData('Policies',1,""));
